@@ -13,14 +13,15 @@
 | 源数据 | YAML + Git | 保存人可阅读、可比较的知识状态 |
 | 查询索引 | SQLite | 从 YAML 重建，为查询和图谱提供派生数据 |
 | 采集器 | GitHub API + PyPI API | 收集版本、公开规模信号和发现候选 |
-| 研究执行 | Codex 任务交接 | 带上下文查源、实验、复盘并产生待审核变更 |
+| AI 会话探索 | Codex 为当前首个集成 | 承接人主动发起的提问、质疑、查源、实验和复盘 |
+| 被动知识雷达 | GitHub API + PyPI API | 在用户未提问时持续收集候选、版本、规模信号和变化 |
 
 ## 分层数据模型
 
 ```mermaid
 flowchart TB
     Raw["来源与变化\nconversations / inbox / discovery"]
-    Personal["个人学习层\nknowledge/nodes"]
+    Personal["学习与调研层\nknowledge/nodes"]
     Evidence["外部证据与实验\nknowledge/evidence / experiments"]
     Proposal["待审核层\nproposals"]
     Accepted["已审核知识\nclaims / decisions / reviews"]

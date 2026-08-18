@@ -1,7 +1,7 @@
 [project]
 name = "agent-tech-radar"
 version = "0.1.0"
-description = "A conversation-centered, evidence-backed personal technology radar for AI agent development."
+description = "A dual-input technology knowledge graph powered by AI conversations, passive radar discovery, evidence, and experiments."
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
