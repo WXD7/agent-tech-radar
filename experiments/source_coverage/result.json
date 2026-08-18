@@ -1,0 +1,58 @@
+{
+  "experiment_id": "exp-source-coverage",
+  "technology_count": 5,
+  "passed_count": 5,
+  "all_passed": true,
+  "rows": [
+    {
+      "technology_id": "tech-pydantic-ai",
+      "checks": {
+        "homepage": true,
+        "repository": true,
+        "capabilities": true,
+        "sources": true
+      },
+      "passed": true
+    },
+    {
+      "technology_id": "tech-openai-agents",
+      "checks": {
+        "homepage": true,
+        "repository": true,
+        "capabilities": true,
+        "sources": true
+      },
+      "passed": true
+    },
+    {
+      "technology_id": "tech-langgraph",
+      "checks": {
+        "homepage": true,
+        "repository": true,
+        "capabilities": true,
+        "sources": true
+      },
+      "passed": true
+    },
+    {
+      "technology_id": "tech-crewai",
+      "checks": {
+        "homepage": true,
+        "repository": true,
+        "capabilities": true,
+        "sources": true
+      },
+      "passed": true
+    },
+    {
+      "technology_id": "tech-autogen",
+      "checks": {
+        "homepage": true,
+        "repository": true,
+        "capabilities": true,
+        "sources": true
+      },
+      "passed": true
+    }
+  ]
+}

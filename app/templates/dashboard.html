@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+
+{% block content %}
+<header class="topbar">
+  <div>
+    <p class="eyebrow">PERSONAL AGENT LEARNING SYSTEM</p>
+    <h1>让 Codex 会话沉淀为<br><em>持续生长的技术笔记</em></h1>
+    <p class="lead">自动研究负责发现广度，你与 Codex 的会话负责学习深度；系统把两者提炼成笔记，再用官方资料和实验独立查证。</p>
+  </div>
+  <div class="run-state">
+    <span>当前工作方式</span>
+    <strong>会话驱动</strong>
+    <small>仅同步你明确导入的任务</small>
+  </div>
+</header>
+
+<section class="stats" aria-label="雷达统计">
+  {% for stat in stats %}
+  <article class="stat-card">
+    <span>{{ stat.label }}</span><strong>{{ stat.value }}</strong><small>{{ stat.delta }}</small>
+  </article>
+  {% endfor %}
+</section>
+
+<section class="learning-pipeline" aria-label="学习闭环">
+  <a href="/conversations/import"><span>01 · INPUT</span><strong>导入 Codex 会话</strong><p>保留问题、回答与认知变化，不扫描其他私人任务。</p></a>
+  <a href="/nodes"><span>02 · DISTILL</span><strong>提炼学习笔记</strong><p>拆成独立知识点，标明来自会话、自动研究或手写。</p></a>
+  <a href="/reviews"><span>03 · VERIFY</span><strong>二次查源与审核</strong><p>AI 回答不是事实依据；外部结论需官方资料或实验支持。</p></a>
+</section>
+
+<section class="dashboard-grid">
+  <article class="panel graph-preview">
+    <div class="panel-heading">
+      <div><span class="kicker">NAVIGATION MAP</span><h2>Agent 技术路径</h2></div>
+      <a class="text-link" href="/graph">打开关系图 →</a>
+    </div>
+    <div class="mini-graph" aria-label="Agent 技术关系图预览">
+      <div class="orbit orbit-one"></div><div class="orbit orbit-two"></div>
+      <div class="node node-center">Agent<br>开发</div><div class="node node-a">类型安全</div>
+      <div class="node node-b">状态编排</div><div class="node node-c">工具与 MCP</div>
+      <div class="node node-d">观测评测</div><div class="node node-e">人工审核</div>
+    </div>
+    <p class="panel-footnote">图谱是导航地图，不是笔记正文。先看技术路线，再按需展开结论、证据和实验。</p>
+  </article>
+
+  <article class="panel changes-panel">
+    <div class="panel-heading">
+      <div><span class="kicker">CHANGE INBOX</span><h2>最新变化</h2></div>
+      <a class="count" href="/changes">{{ changes|length }}</a>
+    </div>
+    <div class="change-list">
+      {% for change in changes %}
+      <a class="change-item" href="{{ change.url }}" target="_blank" rel="noreferrer">
+        <div class="change-source">{{ change.source_kind }}</div>
+        <div>
+          <div class="change-title-row"><h3>{{ change.title }}</h3><span>{{ {'high':'高价值','medium':'待研判','low':'普通'}[change.importance] }}</span></div>
+          <p>{{ change.summary }}</p>
+        </div>
+      </a>
+      {% endfor %}
+    </div>
+  </article>
+</section>
+
+<section class="review-strip">
+  <div><span class="kicker">REVIEW FIRST</span><h2>Codex 的结论必须经过你</h2></div>
+  <div class="review-strip-list">
+    {% for proposal in pending %}
+    <a href="/reviews/{{ proposal.id }}"><span>{{ proposal.action|replace('_', ' ') }}</span><strong>{{ proposal.title }}</strong><small>置信度 {{ proposal.proposed_claim.confidence }}% →</small></a>
+    {% else %}<p class="empty-state">目前没有待审核提案。</p>{% endfor %}
+  </div>
+</section>
+{% endblock %}

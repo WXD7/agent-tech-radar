@@ -1,0 +1,18 @@
+id: proposal-openai-tracing
+title: 为 tracing 结论补充适用边界
+action: update_claim
+technology_id: tech-openai-agents
+target_claim_id: claim-openai-tracing
+proposed_claim:
+  id: claim-openai-tracing
+  capability_id: cap-observability
+  text: OpenAI Agents SDK 提供内建 tracing；跨模型供应商、自托管与敏感数据处理边界需要单独评估，不能只凭功能存在就判定适合生产。
+  status: hypothesis
+  confidence: 61
+rationale: 需要把“具备功能”和“满足公司的生产治理要求”拆成两个不同结论。
+evidence_ids: [ev-openai-agents-repo]
+status: pending
+created_at: 2026-08-18T00:25:00Z
+reviewed_at: null
+reviewer_note: null
+

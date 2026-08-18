@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+{% block title %}学习笔记 · Agent 技术雷达{% endblock %}
+{% block content %}
+<header class="page-header node-page-header">
+  <div>
+    <p class="eyebrow">CODEX-CENTERED LEARNING NOTES</p>
+    <h1>从会话中学习<br><em>再独立查证</em></h1>
+    <p class="lead">这里是主工作台：Codex 会话保留“我是怎么认识到的”，官方资料和实验回答“它到底是不是真的”。知识图谱只负责导航。</p>
+  </div>
+  <div class="header-action-group"><a class="button primary" href="/conversations/import">导入 Codex 会话</a><a class="button secondary" href="/nodes/new?node_type=note">手写一条笔记</a></div>
+</header>
+
+<section class="knowledge-streams">
+  <article class="stream-card conversation-stream">
+    <span class="kicker">FLOW A · PERSONAL LEARNING</span>
+    <h2>Codex 会话学习流</h2>
+    <p>你主动提问产生的任务，经你明确导入后，由 Codex 总结、拆解并留下待查证项。</p>
+    <div class="stream-metric"><strong>{{ conversation_sources|length }}</strong><span>段已导入会话</span><strong>{{ conversation_note_count }}</strong><span>条会话笔记</span></div>
+    <a href="/conversations/import">导入一段会话 →</a>
+  </article>
+  <article class="stream-card research-stream">
+    <span class="kicker">FLOW B · AUTOMATED RESEARCH</span>
+    <h2>自动研究补全流</h2>
+    <p>技术发现、变更监控、查源和小实验用于补广度，不会把搜索结果直接写成已验证事实。</p>
+    <div class="stream-metric"><strong>{{ research_note_count }}</strong><span>条自动研究笔记</span><strong>独立</strong><span>事实查证层</span></div>
+    <a href="/discovery">查看发现覆盖 →</a>
+  </article>
+</section>
+
+{% if conversation_sources %}
+<section class="node-list-section">
+  <div class="section-heading"><div><span class="kicker">IMPORTED TASKS</span><h2>已导入的 Codex 会话</h2></div><span class="badge neutral">只同步你选择的会话</span></div>
+  <div class="conversation-source-list">
+    {% for source in conversation_sources %}
+    <a href="/conversations/{{ source.id }}"><span class="source-status {{ source.status }}">{{ {'pending':'待同步','synced':'已同步','stale':'有新内容','unavailable':'不可用'}[source.status] }}</span><strong>{{ source.title }}</strong><p>{{ source.summary or '已登记会话来源，等待 Codex 提炼学习笔记。' }}</p><small>{{ source.note_ids|length }} 条记录 · 更新 {{ source.updated_at[:10] }} →</small></a>
+    {% endfor %}
+  </div>
+</section>
+{% endif %}
+
+<section class="node-list-section">
+  <div class="section-heading"><div><span class="kicker">LEARNING NOTES</span><h2>可复习的知识点</h2></div><span class="badge neutral">{{ active_nodes|length }} 条</span></div>
+  <div class="knowledge-node-grid">
+    {% for node in active_nodes %}
+    <a class="knowledge-node-card {{ node.node_type }}" href="/nodes/{{ node.id }}">
+      <div class="node-card-top"><span>{{ source_kind_labels[node.source_kind] }}</span><small class="verification {{ node.verification_status }}">{{ verification_labels[node.verification_status] }}</small></div>
+      <h2>{{ node.title }}</h2>
+      <p>{{ node.body }}</p>
+      {% set target = target_map.get(node.target_id) %}
+      <div class="node-card-target">{{ node_type_labels[node.node_type] }} · {{ target.label if target else node.target_id }}</div>
+    </a>
+    {% else %}
+    <div class="node-empty-card"><strong>还没有学习笔记</strong><p>导入一段 Codex 会话，或从图谱中的技术节点继续研究。</p></div>
+    {% endfor %}
+  </div>
+</section>
+
+{% if archived_nodes %}
+<section class="node-list-section archived-section">
+  <div class="section-heading"><div><span class="kicker">ARCHIVED</span><h2>已归档</h2></div><span class="badge neutral">{{ archived_nodes|length }} 条</span></div>
+  <div class="archived-node-list">
+    {% for node in archived_nodes %}<a href="/nodes/{{ node.id }}"><span>{{ node_type_labels[node.node_type] }}</span><strong>{{ node.title }}</strong><small>可恢复</small></a>{% endfor %}
+  </div>
+</section>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,11 @@
+id: tech-langgraph-pypi-5b9a1824ea
+source_id: pypi:langgraph
+technology_id: tech-langgraph
+source_kind: PyPI JSON API
+title: LangGraph 包版本为 1.2.11
+url: https://pypi.org/project/langgraph/1.2.11/
+detected_at: '2026-08-18T03:31:41+00:00'
+content_hash: 5b9a1824ea1bd1baa1b895c71b59151b1fd9ef326ed1f86460b1637661fb5eb1
+importance: medium
+status: new
+summary: 包版本事实已记录；这本身不代表技术优劣发生变化。

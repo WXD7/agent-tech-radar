@@ -1,0 +1,359 @@
+- id: candidate-google-adk-python
+  name: Google Agent Development Kit
+  repository: https://github.com/google/adk-python
+  homepage: https://google.github.io/adk-docs/
+  description: Google 的开源、代码优先 Agent 开发工具包，覆盖构建、评估和部署。
+  category_ids: [discovery-category-vendor-sdk, discovery-category-orchestration, discovery-category-multi-agent]
+  ecosystem: Python
+  status: triaged
+  relevance: high
+  review_note: 官方仓库明确定位为 Agent 框架；尚未进入深度评估。
+  source_query_ids: [discovery-query-agent-sdk, discovery-query-topic-ai-agents]
+  github_stars: 21166
+  github_forks: 3857
+  last_activity_at: "2026-08-18T04:24:42Z"
+  observed_at: "2026-08-18T06:20:00Z"
+  license: Apache-2.0
+  archived: false
+
+- id: candidate-strands-agents-harness-sdk
+  name: Strands Agents
+  repository: https://github.com/strands-agents/harness-sdk
+  homepage: http://strandsagents.com/
+  description: 面向生产 Agent 的开源 Python/TypeScript SDK，强调模型和云平台中立。
+  category_ids: [discovery-category-vendor-sdk, discovery-category-general-framework]
+  ecosystem: Python / TypeScript
+  status: triaged
+  relevance: high
+  review_note: 官方仓库明确包含 Agent framework、SDK 与 MCP 主题。
+  source_query_ids: [discovery-query-agent-framework, discovery-query-agent-sdk]
+  github_stars: 6934
+  github_forks: 1044
+  last_activity_at: "2026-08-18T04:03:17Z"
+  observed_at: "2026-08-18T06:20:00Z"
+  license: Apache-2.0
+  archived: false
+
+- id: candidate-huggingface-smolagents
+  name: smolagents
+  repository: https://github.com/huggingface/smolagents
+  homepage: https://huggingface.co/docs/smolagents
+  description: Hugging Face 的轻量 Agent 库，特别关注代码作为 Agent 行动形式。
+  category_ids: [discovery-category-general-framework]
+  ecosystem: Python
+  status: triaged
+  relevance: high
+  review_note: 官方仓库定位明确，适合补足轻量级框架类别。
+  source_query_ids: [discovery-query-agent-framework, discovery-query-topic-ai-agents]
+  github_stars: 28848
+  github_forks: 2869
+  last_activity_at: "2026-07-21T18:35:00Z"
+  observed_at: "2026-08-18T06:20:00Z"
+  license: Apache-2.0
+  archived: false
+
+- id: candidate-microsoft-semantic-kernel
+  name: Semantic Kernel
+  repository: https://github.com/microsoft/semantic-kernel
+  homepage: https://aka.ms/semantic-kernel
+  description: Microsoft 的多语言 AI SDK，提供 Agent、插件、流程编排等抽象。
+  category_ids: [discovery-category-vendor-sdk, discovery-category-general-framework, discovery-category-orchestration]
+  ecosystem: .NET / Python / Java
+  status: triaged
+  relevance: high
+  review_note: 已经具有显著规模，且可补足 .NET/Java 生态视角。
+  source_query_ids: [discovery-query-agent-sdk, discovery-query-dotnet]
+  github_stars: 28461
+  github_forks: 4729
+  last_activity_at: "2026-08-17T22:33:00Z"
+  observed_at: "2026-08-18T06:20:00Z"
+  license: MIT
+  archived: false
+
+- id: candidate-run-llama-llama-index
+  name: LlamaIndex
+  repository: https://github.com/run-llama/llama_index
+  homepage: https://developers.llamaindex.ai
+  description: 面向文档 Agent、RAG 与数据工作流的开发平台和框架。
+  category_ids: [discovery-category-general-framework, discovery-category-orchestration]
+  ecosystem: Python / TypeScript
+  status: triaged
+  relevance: high
+  review_note: 同时覆盖 Agent 和数据/RAG，需后续拆分实际 Agent 能力边界。
+  source_query_ids: [discovery-query-agent-framework, discovery-query-workflow]
+  github_stars: 51716
+  github_forks: 7955
+  last_activity_at: "2026-08-17T21:24:42Z"
+  observed_at: "2026-08-18T06:20:00Z"
+  license: MIT
+  archived: false
+
+- id: candidate-deepset-haystack
+  name: Haystack
+  repository: https://github.com/deepset-ai/haystack
+  homepage: https://haystack.deepset.ai
+  description: 面向生产级 LLM 应用、RAG 和 Agent 工作流的模块化编排框架。
+  category_ids: [discovery-category-orchestration, discovery-category-general-framework]
+  ecosystem: Python
+  status: triaged
+  relevance: high
+  review_note: 官方简介明确包含 Agent workflow、memory、routing 与 MCP。
+  source_query_ids: [discovery-query-agent-framework, discovery-query-orchestration]
+  github_stars: 26239
+  github_forks: 3019
+  last_activity_at: "2026-08-17T19:45:08Z"
+  observed_at: "2026-08-18T06:20:00Z"
+  license: Apache-2.0
+  archived: false
+
+- id: candidate-mastra
+  name: Mastra
+  repository: https://github.com/mastra-ai/mastra
+  homepage: https://mastra.ai
+  description: 面向 AI 应用和 Agent 的 TypeScript 框架，覆盖 workflow、eval 与 MCP。
+  category_ids: [discovery-category-general-framework, discovery-category-orchestration]
+  ecosystem: TypeScript
+  status: triaged
+  relevance: high
+  review_note: 用于补齐 TypeScript 原生 Agent 框架视角。
+  source_query_ids: [discovery-query-typescript, discovery-query-agent-framework]
+  github_stars: 27261
+  github_forks: 2646
+  last_activity_at: "2026-08-18T05:50:18Z"
+  observed_at: "2026-08-18T06:20:00Z"
+  license: null
+  archived: false
+
+- id: candidate-langroid
+  name: Langroid
+  repository: https://github.com/langroid/langroid
+  homepage: https://langroid.github.io/langroid/
+  description: 以 Multi-Agent Programming 为主要定位的 Python LLM 框架。
+  category_ids: [discovery-category-multi-agent, discovery-category-general-framework]
+  ecosystem: Python
+  status: triaged
+  relevance: high
+  review_note: 多 Agent 定位明确，规模低于主流候选，但不应因此被搜索遗漏。
+  source_query_ids: [discovery-query-multi-agent, discovery-query-agent-framework]
+  github_stars: 4099
+  github_forks: 394
+  last_activity_at: "2026-07-29T12:59:53Z"
+  observed_at: "2026-08-18T06:20:00Z"
+  license: MIT
+  archived: false
+
+- id: candidate-beeai-framework
+  name: BeeAI Framework
+  repository: https://github.com/i-am-bee/beeai-framework
+  homepage: http://framework.beeai.dev
+  description: 同时面向 Python 和 TypeScript 的生产级 AI Agent 框架。
+  category_ids: [discovery-category-general-framework, discovery-category-multi-agent]
+  ecosystem: Python / TypeScript
+  status: triaged
+  relevance: high
+  review_note: 作为跨 Python/TypeScript 候选保留，尚待能力级核查。
+  source_query_ids: [discovery-query-agent-framework, discovery-query-typescript]
+  github_stars: 3380
+  github_forks: 480
+  last_activity_at: "2026-08-08T10:31:07Z"
+  observed_at: "2026-08-18T06:20:00Z"
+  license: Apache-2.0
+  archived: false
+
+- id: candidate-camel
+  name: CAMEL
+  repository: https://github.com/camel-ai/camel
+  homepage: https://docs.camel-ai.org/
+  description: 以多 Agent 系统和 AI societies 为主要方向的研究与开发框架。
+  category_ids: [discovery-category-multi-agent]
+  ecosystem: Python
+  status: triaged
+  relevance: high
+  review_note: 补足研究导向的多 Agent 框架路线。
+  source_query_ids: [discovery-query-multi-agent, discovery-query-topic-ai-agents]
+  github_stars: 17598
+  github_forks: 2045
+  last_activity_at: "2026-08-14T17:34:44Z"
+  observed_at: "2026-08-18T06:20:00Z"
+  license: Apache-2.0
+  archived: false
+
+- id: candidate-agno
+  name: Agno
+  repository: https://github.com/agno-agi/agno
+  homepage: https://docs.agno.com
+  description: 面向构建、运行和管理 Agent 平台的 Python 框架。
+  category_ids: [discovery-category-general-framework]
+  ecosystem: Python
+  status: triaged
+  relevance: high
+  review_note: 官方简介与 topic 均直接指向 AI Agent 开发。
+  source_query_ids: [discovery-query-topic-ai-agents, discovery-query-agent-framework]
+  github_stars: 41749
+  github_forks: 5787
+  last_activity_at: "2026-08-18T05:46:36Z"
+  observed_at: "2026-08-18T06:20:00Z"
+  license: Apache-2.0
+  archived: false
+
+- id: candidate-agentscope
+  name: AgentScope
+  repository: https://github.com/agentscope-ai/agentscope
+  homepage: https://docs.agentscope.io/
+  description: 强调可见、可理解和可信运行的 Agent 开发框架。
+  category_ids: [discovery-category-general-framework, discovery-category-multi-agent]
+  ecosystem: Python
+  status: triaged
+  relevance: high
+  review_note: 官方 topic 覆盖 multi-agent、MCP 和 multimodal。
+  source_query_ids: [discovery-query-multi-agent, discovery-query-topic-ai-agents]
+  github_stars: 29001
+  github_forks: 3368
+  last_activity_at: "2026-08-14T15:37:06Z"
+  observed_at: "2026-08-18T06:20:00Z"
+  license: Apache-2.0
+  archived: false
+
+- id: candidate-metagpt
+  name: MetaGPT
+  repository: https://github.com/FoundationAgents/MetaGPT
+  homepage: https://atoms.dev/
+  description: 以软件公司角色协作和自然语言编程为主题的多 Agent 框架。
+  category_ids: [discovery-category-multi-agent]
+  ecosystem: Python
+  status: triaged
+  relevance: high
+  review_note: 规模较大，但最近活跃信号需与其他候选分开观察。
+  source_query_ids: [discovery-query-multi-agent, discovery-query-agent-framework]
+  github_stars: 69871
+  github_forks: 8885
+  last_activity_at: "2026-01-21T10:12:33Z"
+  observed_at: "2026-08-18T06:20:00Z"
+  license: MIT
+  archived: false
+
+- id: candidate-letta
+  name: Letta
+  repository: https://github.com/letta-ai/letta
+  homepage: https://docs.letta.com/
+  description: 以高级记忆、持续状态和长期学习为核心的 Agent 平台。
+  category_ids: [discovery-category-memory-state, discovery-category-general-framework]
+  ecosystem: Python
+  status: triaged
+  relevance: high
+  review_note: 用于避免搜索仅覆盖“编排框架”，而忽略记忆型 Agent 技术。
+  source_query_ids: [discovery-query-stateful, discovery-query-topic-ai-agents]
+  github_stars: 24293
+  github_forks: 2583
+  last_activity_at: "2026-08-16T03:56:11Z"
+  observed_at: "2026-08-18T06:20:00Z"
+  license: Apache-2.0
+  archived: false
+
+- id: candidate-langchain
+  name: LangChain
+  repository: https://github.com/langchain-ai/langchain
+  homepage: https://docs.langchain.com/langchain/
+  description: 定位为 Agent engineering platform 的通用 AI 开发框架。
+  category_ids: [discovery-category-general-framework, discovery-category-orchestration]
+  ecosystem: Python / TypeScript
+  status: triaged
+  relevance: high
+  review_note: 必须与 LangGraph 分开建模，避免把产品家族误合并成单一技术。
+  source_query_ids: [discovery-query-agent-framework, discovery-query-topic-ai-agents]
+  github_stars: 144437
+  github_forks: 24044
+  last_activity_at: "2026-08-18T01:51:37Z"
+  observed_at: "2026-08-18T06:20:00Z"
+  license: MIT
+  archived: false
+
+- id: candidate-anthropic-claude-agent-sdk
+  name: Claude Agent SDK
+  repository: https://github.com/anthropics/claude-agent-sdk-python
+  homepage: null
+  description: Anthropic 的官方 Python Agent SDK 仓库；仓库 API 暂未提供简介，等待深入阅读 README。
+  category_ids: [discovery-category-vendor-sdk]
+  ecosystem: Python
+  status: triaged
+  relevance: high
+  review_note: 通过官方组织观察表发现；这正是普通关键词搜索容易漏掉的类型。
+  source_query_ids: [discovery-query-agent-sdk]
+  github_stars: 7917
+  github_forks: 1238
+  last_activity_at: "2026-08-17T23:31:17Z"
+  observed_at: "2026-08-18T06:20:00Z"
+  license: MIT
+  archived: false
+
+- id: candidate-vercel-ai-sdk
+  name: Vercel AI SDK
+  repository: https://github.com/vercel/ai
+  homepage: https://ai-sdk.dev
+  description: 面向 TypeScript 的 AI 开发工具包，用于构建 AI 应用和 Agent。
+  category_ids: [discovery-category-vendor-sdk, discovery-category-general-framework]
+  ecosystem: TypeScript
+  status: triaged
+  relevance: high
+  review_note: 不以“Agent Framework”作为唯一名称，所以必须有 SDK 和 TypeScript 独立查询。
+  source_query_ids: [discovery-query-agent-sdk, discovery-query-typescript]
+  github_stars: 26257
+  github_forks: 4979
+  last_activity_at: "2026-08-18T06:09:01Z"
+  observed_at: "2026-08-18T06:20:00Z"
+  license: null
+  archived: false
+
+- id: candidate-cloudflare-agents
+  name: Cloudflare Agents
+  repository: https://github.com/cloudflare/agents
+  homepage: https://developers.cloudflare.com/agents/
+  description: 面向 Cloudflare 部署环境的 TypeScript Agent SDK，与 Durable Objects 和 Workflows 结合。
+  category_ids: [discovery-category-vendor-sdk, discovery-category-orchestration]
+  ecosystem: TypeScript
+  status: triaged
+  relevance: high
+  review_note: 补足边缘运行时和持久状态 Agent 的搜索视角。
+  source_query_ids: [discovery-query-agent-sdk, discovery-query-typescript, discovery-query-stateful]
+  github_stars: 5452
+  github_forks: 670
+  last_activity_at: "2026-08-17T18:20:46Z"
+  observed_at: "2026-08-18T06:20:00Z"
+  license: MIT
+  archived: false
+
+- id: candidate-dify
+  name: Dify
+  repository: https://github.com/langgenius/dify
+  homepage: https://dify.ai
+  description: 面向 Agentic workflow、RAG 和多模型/工具集成的可视化协作平台。
+  category_ids: [discovery-category-visual-platform, discovery-category-orchestration]
+  ecosystem: TypeScript / Python
+  status: triaged
+  relevance: high
+  review_note: 它不是单纯的代码库式框架，但会影响“自建还是平台化”的技术选型。
+  source_query_ids: [discovery-query-workflow, discovery-query-typescript]
+  github_stars: 152753
+  github_forks: 24123
+  last_activity_at: "2026-08-18T06:15:42Z"
+  observed_at: "2026-08-18T06:20:00Z"
+  license: null
+  archived: false
+
+- id: candidate-flowise
+  name: Flowise
+  repository: https://github.com/FlowiseAI/Flowise
+  homepage: https://flowiseai.com
+  description: 官方简介为“可视化构建 AI Agents”，但当前官方仓库已归档。
+  category_ids: [discovery-category-visual-platform]
+  ecosystem: TypeScript
+  status: excluded
+  relevance: medium
+  review_note: 保留为“已见过但不进入当前图谱”的负面知识，避免下次重复发现和重复调研。
+  source_query_ids: [discovery-query-typescript, discovery-query-workflow]
+  github_stars: 55378
+  github_forks: 24920
+  last_activity_at: "2026-08-13T12:38:19Z"
+  observed_at: "2026-08-18T06:20:00Z"
+  license: null
+  archived: true

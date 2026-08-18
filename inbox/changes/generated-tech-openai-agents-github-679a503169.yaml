@@ -1,0 +1,11 @@
+id: tech-openai-agents-github-679a503169
+source_id: github-release:openai/openai-agents-python
+technology_id: tech-openai-agents
+source_kind: GitHub Releases API
+title: OpenAI Agents SDK 发布 v0.21.1
+url: https://github.com/openai/openai-agents-python/releases/tag/v0.21.1
+detected_at: '2026-08-18T03:31:41+00:00'
+content_hash: 679a5031699fc36ca5ff0099d9d32d9b761e5cb1713a19423ead9efde75c8a15
+importance: high
+status: new
+summary: API 返回发生变化，等待 Codex 阅读 release 内容并判断是否影响已有结论。

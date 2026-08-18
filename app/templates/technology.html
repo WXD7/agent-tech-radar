@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block title %}{{ technology.name }} · Agent 技术雷达{% endblock %}
+{% block content %}
+<header class="detail-hero">
+  <div>
+    <p class="eyebrow">{{ technology.kind|upper }} · {{ technology.status|upper }}</p>
+    <h1>{{ technology.name }}</h1><p class="lead">{{ technology.description }}</p>
+    <div class="tag-row">{% for tag in technology.tags %}<span>{{ tag }}</span>{% endfor %}</div>
+  </div>
+  <div class="detail-links">
+    <a href="{{ technology.repository }}" target="_blank" rel="noreferrer">官方仓库 ↗</a>
+    <a href="{{ technology.homepage }}" target="_blank" rel="noreferrer">官方网站 ↗</a>
+    {% if technology.package %}<span>包：{{ technology.package }}</span>{% endif %}
+    <a href="/nodes/new?target_id={{ technology.id }}&node_type=question&relation_type=questions">追问这项技术 →</a>
+    <a href="/nodes/new?target_id={{ technology.id }}&node_type=challenge&relation_type=challenges">质疑当前判断 →</a>
+  </div>
+</header>
+<section class="detail-grid">
+  <div class="detail-main">
+    <div class="section-heading"><div><span class="kicker">CLAIMS</span><h2>可验证结论</h2></div><span class="badge neutral">{{ claims|length }} 条</span></div>
+    <div class="claim-stack">
+      {% for claim in claims %}
+      <article class="claim-card {{ claim.status }}">
+        <div class="claim-meta"><span>{{ {'hypothesis':'待验证','supported':'有支持','contested':'有争议','rejected':'已否定'}[claim.status] }}</span><strong>{{ claim.confidence }}%</strong></div>
+        <h3>{{ claim.text }}</h3><div class="confidence-track"><i style="width: {{ claim.confidence }}%"></i></div>
+        <div class="evidence-links">{% for item in claim_evidence[claim.id] %}<a href="{{ item.url }}" target="_blank" rel="noreferrer">{{ item.title }} ↗</a>{% else %}<span>尚无已绑定证据</span>{% endfor %}</div>
+        <div class="claim-actions"><a href="/nodes/new?target_id={{ claim.id }}&node_type=question&relation_type=questions">追问</a><a href="/nodes/new?target_id={{ claim.id }}&node_type=challenge&relation_type=challenges">质疑</a><a href="/nodes/new?target_id={{ claim.id }}&node_type=note&relation_type=extends">补充</a></div>
+      </article>
+      {% else %}<p class="empty-state">尚未形成结论。</p>{% endfor %}
+    </div>
+  </div>
+  <aside class="detail-aside">
+    {% if popularity %}<div class="aside-card popularity-card"><span class="kicker">POPULARITY SIGNAL</span><h2>规模与活跃信号</h2><div class="popularity-numbers"><div><strong>{{ "{:,}".format(popularity.github_stars) }}</strong><small>GitHub Stars</small></div><div><strong>{{ "{:,}".format(popularity.github_forks) }}</strong><small>Forks</small></div></div><p>最近仓库活动：{{ popularity.last_activity_at[:10] }}<br>观测时间：{{ popularity.observed_at[:10] }}</p><em>只表示社区规模与活跃度，不代表质量或适配度。</em></div>{% endif %}
+    <div class="aside-card"><span class="kicker">CAPABILITIES</span><h2>能力覆盖</h2>{% for capability in capabilities %}<div class="capability-row"><strong>{{ capability.name }}</strong><small>{{ capability.group }}</small></div>{% endfor %}</div>
+    <div class="aside-card"><span class="kicker">RECENT CHANGES</span><h2>相关变化</h2>{% for change in changes %}<a class="compact-change" href="{{ change.url }}" target="_blank" rel="noreferrer"><strong>{{ change.title }}</strong><small>{{ change.detected_at[:10] }}</small></a>{% else %}<p class="empty-state">暂无变化。</p>{% endfor %}</div>
+  </aside>
+</section>
+{% endblock %}

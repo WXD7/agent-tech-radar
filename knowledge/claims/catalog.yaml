@@ -1,0 +1,46 @@
+- id: claim-pydantic-typed-output
+  technology_id: tech-pydantic-ai
+  capability_id: cap-structured-output
+  text: Pydantic AI 对结构化输出提供类型化建模能力，但错误恢复与复杂嵌套场景仍需实验验证。
+  status: hypothesis
+  confidence: 64
+  evidence_ids: [ev-pydantic-docs, ev-pydantic-repo]
+  experiment_ids: [exp-structured-output]
+  updated_at: 2026-08-18T00:00:00Z
+- id: claim-openai-tracing
+  technology_id: tech-openai-agents
+  capability_id: cap-observability
+  text: OpenAI Agents SDK 将 tracing 作为主要能力暴露，但跨供应商与自托管边界仍需验证。
+  status: hypothesis
+  confidence: 58
+  evidence_ids: [ev-openai-agents-repo]
+  experiment_ids: []
+  updated_at: 2026-08-18T00:00:00Z
+- id: claim-langgraph-durable
+  technology_id: tech-langgraph
+  capability_id: cap-durability
+  text: LangGraph 的状态与检查点设计适合长运行工作流，但会引入额外持久化和调试概念。
+  status: hypothesis
+  confidence: 55
+  evidence_ids: [ev-langgraph-repo]
+  experiment_ids: []
+  updated_at: 2026-08-18T00:00:00Z
+- id: claim-crewai-abstractions
+  technology_id: tech-crewai
+  capability_id: cap-orchestration
+  text: CrewAI 的角色与流程抽象可能降低多 Agent 场景的上手成本，复杂控制流仍需对比实验。
+  status: hypothesis
+  confidence: 45
+  evidence_ids: [ev-crewai-repo]
+  experiment_ids: []
+  updated_at: 2026-08-18T00:00:00Z
+- id: claim-autogen-runtime
+  technology_id: tech-autogen
+  capability_id: cap-orchestration
+  text: AutoGen 的运行时抽象适合事件驱动的多 Agent 系统，但应用层复杂度需要样例验证。
+  status: hypothesis
+  confidence: 48
+  evidence_ids: [ev-autogen-repo]
+  experiment_ids: []
+  updated_at: 2026-08-18T00:00:00Z
+

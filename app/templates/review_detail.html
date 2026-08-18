@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block title %}审核：{{ proposal.title }} · Agent 技术雷达{% endblock %}
+{% block content %}
+<header class="review-detail-header"><a class="back-link" href="/reviews">← 返回审核队列</a><p class="eyebrow">{{ technology.name if technology else proposal.technology_id }} · {{ proposal.action|upper }}</p><h1>{{ proposal.title }}</h1><p class="lead">{{ proposal.rationale }}</p></header>
+{% if request.query_params.get('reviewed') %}<div class="success-banner">审核已保存，知识索引已经重新生成。</div>{% endif %}
+<section class="review-detail-grid">
+  <form class="decision-form" method="post" action="/reviews/{{ proposal.id }}/decision">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+    <div class="form-heading"><div><span class="kicker">PROPOSED CLAIM</span><h2>校正这条结论</h2></div><span class="review-status {{ proposal.status }}">{{ {'pending':'等待审核','accepted':'已接受','rejected':'已驳回'}[proposal.status] }}</span></div>
+    <label><span>能力维度</span><input value="{{ capability.name if capability else proposal.proposed_claim.capability_id }}" disabled></label>
+    <label><span>建议结论</span><textarea name="edited_text" rows="5" required minlength="8" {% if proposal.status != 'pending' %}disabled{% endif %}>{{ proposal.proposed_claim.text }}</textarea></label>
+    <label><span>置信度 <output id="confidence-output">{{ proposal.proposed_claim.confidence }}%</output></span><input type="range" name="confidence" min="0" max="100" value="{{ proposal.proposed_claim.confidence }}" oninput="document.getElementById('confidence-output').value = this.value + '%'" {% if proposal.status != 'pending' %}disabled{% endif %}></label>
+    <label><span>审核备注</span><textarea name="reviewer_note" rows="3" placeholder="说明为什么接受、修改或驳回。" {% if proposal.status != 'pending' %}disabled{% endif %}>{{ proposal.reviewer_note or '' }}</textarea></label>
+    {% if proposal.status == 'pending' %}<div class="decision-actions"><button class="button danger" type="submit" name="decision" value="reject">驳回并保留记录</button><button class="button primary" type="submit" name="decision" value="accept">接受并写入知识库</button></div>{% endif %}
+  </form>
+  <aside class="evidence-rail">
+    <span class="kicker">EVIDENCE</span><h2>证据链</h2>
+    {% for item in evidence %}<a class="evidence-card" href="{{ item.url }}" target="_blank" rel="noreferrer"><span>{{ item.source_type|replace('_', ' ') }}</span><strong>{{ item.title }}</strong><p>{{ item.summary }}</p><small>{{ item.publisher }} · {{ item.retrieved_at[:10] }} ↗</small></a>{% else %}<p class="empty-state">没有绑定证据，不建议接受。</p>{% endfor %}
+    <div class="warning-card"><strong>审核原则</strong><p>官方宣称、源码观察、实验结果和 AI 推断必须分开呈现。置信度不是事实。</p></div>
+  </aside>
+</section>
+{% endblock %}

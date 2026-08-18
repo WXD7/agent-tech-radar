@@ -1,0 +1,11 @@
+id: tech-openai-agents-pypi-d7a5a18f78
+source_id: pypi:openai-agents
+technology_id: tech-openai-agents
+source_kind: PyPI JSON API
+title: OpenAI Agents SDK 包版本为 0.21.1
+url: https://pypi.org/project/openai-agents/0.21.1/
+detected_at: '2026-08-18T03:31:41+00:00'
+content_hash: d7a5a18f785fa77a7bba776b7485251226b9471778764110e8992256418d51e7
+importance: medium
+status: new
+summary: 包版本事实已记录；这本身不代表技术优劣发生变化。

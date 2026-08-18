@@ -1,0 +1,31 @@
+- id: cap-structured-output
+  name: 结构化与类型安全
+  group: Agent 基础
+  description: 输入、输出与工具参数能否被清晰建模、校验和恢复。
+  priority: core
+- id: cap-orchestration
+  name: 编排与状态
+  group: Agent 基础
+  description: 是否支持分支、循环、暂停、恢复以及跨步骤状态管理。
+  priority: core
+- id: cap-tools-mcp
+  name: 工具与 MCP
+  group: 集成
+  description: 工具调用、MCP 接入、权限边界和错误恢复是否清晰。
+  priority: core
+- id: cap-observability
+  name: 观测与评测
+  group: 质量
+  description: 是否能追踪执行、定位失败、记录成本并建立回归评测。
+  priority: core
+- id: cap-human-loop
+  name: Human-in-the-loop
+  group: 治理
+  description: 是否支持人工批准、编辑、暂停和恢复敏感步骤。
+  priority: core
+- id: cap-durability
+  name: 持久化与检查点
+  group: 生产化
+  description: 长任务发生中断后能否保存状态并可靠恢复。
+  priority: important
+

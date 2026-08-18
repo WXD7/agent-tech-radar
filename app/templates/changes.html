@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block title %}变化收件箱 · Agent 技术雷达{% endblock %}
+{% block content %}
+<header class="page-header"><p class="eyebrow">DIFF-DRIVEN DISCOVERY</p><h1>只有真的变化<br><em>才值得消耗智能</em></h1><p class="lead">采集层只保存版本、时间、URL 和内容哈希；Codex 只研判去重后仍有价值的变化。</p></header>
+<section class="table-panel">
+  <div class="table-row table-head"><span>重要性</span><span>来源</span><span>变化</span><span>发现时间</span><span>状态</span></div>
+  {% for change in changes %}
+  <a class="table-row" href="{{ change.url }}" target="_blank" rel="noreferrer">
+    <span><i class="priority-dot {{ change.importance }}"></i>{{ {'high':'高','medium':'中','low':'低'}[change.importance] }}</span><span>{{ change.source_kind }}</span>
+    <span><strong>{{ change.title }}</strong><small>{{ change.summary }}</small></span><span>{{ change.detected_at[:16]|replace('T', ' ') }}</span><span class="status-pill">{{ {'new':'新发现','triaged':'已研判','ignored':'已忽略'}[change.status] }}</span>
+  </a>
+  {% endfor %}
+</section>
+{% endblock %}
+

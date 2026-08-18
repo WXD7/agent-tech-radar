@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block title %}审核队列 · Agent 技术雷达{% endblock %}
+{% block content %}
+<header class="page-header"><p class="eyebrow">HUMAN DECISION GATE</p><h1>AI 提出修改<br><em>人决定什么算知识</em></h1><p class="lead">接受前可以改写结论和置信度；驳回也会留下原因，供后续复盘。</p></header>
+<section class="review-list">
+  {% for proposal in proposals %}
+  <a class="review-card" href="/reviews/{{ proposal.id }}">
+    <div class="review-status {{ proposal.status }}">{{ {'pending':'等待审核','accepted':'已接受','rejected':'已驳回'}[proposal.status] }}</div>
+    <div><span>{{ technologies[proposal.technology_id].name }} · {{ proposal.action|replace('_', ' ') }}</span><h2>{{ proposal.title }}</h2><p>{{ proposal.rationale }}</p></div>
+    <div class="review-score"><strong>{{ proposal.proposed_claim.confidence }}%</strong><small>AI 置信度</small></div>
+  </a>
+  {% endfor %}
+</section>
+{% endblock %}
+

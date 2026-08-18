@@ -1,0 +1,11 @@
+id: tech-autogen-github-4a223a90c0
+source_id: github-release:microsoft/autogen
+technology_id: tech-autogen
+source_kind: GitHub Releases API
+title: AutoGen 发布 python-v0.7.5
+url: https://github.com/microsoft/autogen/releases/tag/python-v0.7.5
+detected_at: '2026-08-18T03:31:41+00:00'
+content_hash: 4a223a90c00a786fe210cc922926c22d0f34eba801b62c3065c1c16920d88114
+importance: high
+status: new
+summary: API 返回发生变化，等待 Codex 阅读 release 内容并判断是否影响已有结论。

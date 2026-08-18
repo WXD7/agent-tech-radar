@@ -1,0 +1,118 @@
+{% extends "base.html" %}
+{% block title %}发现与覆盖 · Agent 技术雷达{% endblock %}
+{% block content %}
+<header class="page-header discovery-header">
+  <div>
+    <p class="eyebrow">AUDITABLE BREADTH DISCOVERY</p>
+    <h1>不承诺全知，<br><em>但让遗漏看得见</em></h1>
+    <p class="lead">候选池与已评估结论严格分层。系统用多个技术类别、生态和来源反复交叉发现，并保留排除记录，避免只靠一个关键词或下一次重复调研。</p>
+  </div>
+  <a class="button primary header-action" href="/graph">在图谱中查看候选</a>
+</header>
+
+<section class="stats discovery-stats" aria-label="发现覆盖摘要">
+  {% for stat in stats %}
+  <article class="stat-card"><span>{{ stat.label }}</span><strong>{{ stat.value }}</strong><small>{{ stat.note }}</small></article>
+  {% endfor %}
+</section>
+
+<section class="discovery-explainer">
+  <div><span>01</span><strong>广撒网</strong><p>10 个查询族分别搜索框架、SDK、工作流、多 Agent、记忆、TypeScript 与 .NET。</p></div>
+  <div><span>02</span><strong>先隔离</strong><p>自动搜索结果先进入“未判读层”；只有完成初筛的候选才进入知识图谱。</p></div>
+  <div><span>03</span><strong>再验证</strong><p>候选的技术结论仍需官方资料、实验和你的审核，Star 只表示热度与规模。</p></div>
+  <div><span>04</span><strong>测盲区</strong><p>连续记录每轮新增率、重复率、误报率和类别空白，三轮后才判断是否暂时饱和。</p></div>
+</section>
+
+<section class="discovery-grid">
+  <div class="coverage-panel">
+    <div class="section-heading">
+      <div><p class="kicker">CATEGORY COVERAGE</p><h2>六类技术路线覆盖</h2></div>
+      <span class="badge">{{ covered_category_ids|length }} / {{ category_groups|length }}</span>
+    </div>
+    <div class="coverage-matrix">
+      {% for group in category_groups %}
+      <a id="{{ group.category.id }}" href="#category-{{ group.category.id }}" class="coverage-cell {{ 'covered' if group.candidates else 'gap' }}">
+        <span>{{ '已覆盖' if group.candidates else '待补齐' }}</span>
+        <strong>{{ group.category.name }}</strong>
+        <small>{{ group.candidates|length }} 个已初筛候选</small>
+      </a>
+      {% endfor %}
+    </div>
+  </div>
+  <aside class="breadth-panel">
+    <p class="kicker">SATURATION STATUS</p>
+    <h2>{{ '达到暂时饱和' if is_saturated else '暂不能声称“搜全”' }}</h2>
+    <p>达到“暂时饱和”需要连续三轮新增唯一候选率低于 5%，每轮搜索结果完整，并且类别与生态没有明显空白。</p>
+    <div class="saturation-meter">{% for index in range(3) %}<i class="{{ 'filled' if index < saturation_round_count else '' }}"></i>{% endfor %}<span>{{ saturation_round_count }} / 3 轮</span></div>
+    {% if recent_runs %}<p class="latest-run">最近一轮：{{ recent_runs[0].unique_result_count }} 个唯一结果，新增 {{ recent_runs[0].new_candidate_count }} 个候选，新增率 {{ (recent_runs[0].new_unique_rate * 100)|round(1) }}%。</p>{% else %}<p class="latest-run">当前是人工建立的初始基线，自动搜索轮次尚未执行。</p>{% endif %}
+    <small>这是对搜索过程的置信度，不是对互联网完整性的保证。</small>
+  </aside>
+</section>
+
+<section class="discovery-section">
+  <div class="section-heading">
+    <div><p class="kicker">SOURCE PORTFOLIO</p><h2>发现来源不是单点</h2></div>
+    <span class="badge neutral">{{ active_source_count }} 个已启用</span>
+  </div>
+  <div class="source-grid">
+    {% for source in sources %}
+    <article class="source-card {{ source.status }}">
+      <div><span class="source-status">{{ '已启用' if source.status == 'active' else '计划接入' }}</span><small>{{ source.cadence }}</small></div>
+      <h3>{{ source.name }}</h3><p>{{ source.description }}</p>
+      <footer>{{ {'discovery':'发现','verification':'事实验证','both':'发现 + 验证'}[source.role] }}</footer>
+    </article>
+    {% endfor %}
+  </div>
+</section>
+
+<section class="discovery-section">
+  <div class="section-heading">
+    <div><p class="kicker">ECOSYSTEM CHECK</p><h2>候选生态分布</h2></div>
+  </div>
+  <div class="ecosystem-row">
+    {% for ecosystem, count in ecosystem_counts %}<div><strong>{{ count }}</strong><span>{{ ecosystem }}</span></div>{% endfor %}
+  </div>
+</section>
+
+<section class="discovery-section">
+  <div class="section-heading">
+    <div><p class="kicker">TRIAGED CANDIDATES</p><h2>已初筛候选，不是已证实结论</h2></div>
+    <span class="badge neutral">点击仓库可查源</span>
+  </div>
+  {% for group in category_groups %}
+  <section id="category-{{ group.category.id }}" class="candidate-category">
+    <header><div><h3>{{ group.category.name }}</h3><p>{{ group.category.description }}</p></div><span>{{ group.candidates|length }}</span></header>
+    {% if group.candidates %}
+    <div class="candidate-list">
+      {% for candidate in group.candidates %}
+      <article {% if candidate_anchor_category.get(candidate.id) == group.category.id %}id="{{ candidate.id }}"{% endif %} class="candidate-row">
+        <div class="candidate-title"><span>候选 · {{ {'high':'高相关','medium':'中相关','low':'低相关','unreviewed':'未判读'}[candidate.relevance] }}</span><a href="{{ candidate.repository }}" target="_blank" rel="noreferrer">{{ candidate.name }} ↗</a><small>{{ candidate.ecosystem }}{% if candidate.license %} · {{ candidate.license }}{% endif %}</small></div>
+        <p>{{ candidate.description }}</p>
+        <div class="candidate-signals"><strong>{{ "{:,}".format(candidate.github_stars) }}</strong><small>Stars</small><strong>{{ "{:,}".format(candidate.github_forks) }}</strong><small>Forks</small></div>
+        <div class="candidate-review"><span>初筛说明</span><p>{{ candidate.review_note }}</p><small>最近活动 {{ candidate.last_activity_at[:10] }}</small></div>
+      </article>
+      {% endfor %}
+    </div>
+    {% else %}<p class="coverage-gap">这一类还没有通过初筛的候选，是下一轮搜索的明确盲区。</p>{% endif %}
+  </section>
+  {% endfor %}
+</section>
+
+<section class="discovery-grid bottom-discovery-grid">
+  <div class="coverage-panel">
+    <div class="section-heading"><div><p class="kicker">QUERY FAMILIES</p><h2>实际执行的十个搜索角度</h2></div></div>
+    <div class="query-list">
+      {% for query in queries %}
+      <article><div><strong>{{ query.name }}</strong><span>{{ query.ecosystem_focus }} · {{ query.cadence }}</span></div><code>{{ query.query }}</code></article>
+      {% endfor %}
+    </div>
+  </div>
+  <aside class="excluded-panel">
+    <p class="kicker">NEGATIVE KNOWLEDGE</p><h2>已排除，但不遗忘</h2>
+    {% for candidate in excluded %}
+    <article><span>已排除 · {{ candidate.ecosystem }}</span><strong>{{ candidate.name }}</strong><p>{{ candidate.review_note }}</p><a href="{{ candidate.repository }}" target="_blank" rel="noreferrer">查看官方仓库 ↗</a></article>
+    {% else %}<p>暂时没有排除记录。</p>{% endfor %}
+    {% if unreviewed %}<div class="unreviewed-note"><strong>{{ unreviewed|length }} 个未判读搜索结果</strong><p>它们仍在隔离层，尚未进入图谱。</p></div>{% endif %}
+  </aside>
+</section>
+{% endblock %}

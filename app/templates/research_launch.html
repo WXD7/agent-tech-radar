@@ -1,0 +1,8 @@
+{% extends "base.html" %}
+{% block title %}在 Codex 中继续研究 · Agent 技术雷达{% endblock %}
+{% block content %}
+<a class="back-link" href="/graph?focus={{ target.id }}">← 返回导航图</a>
+<section class="launch-panel"><span class="kicker">HANDOFF TO CODEX</span><h1>正在打开 Codex</h1><p class="lead">研究对象：<strong>{{ target.label }}</strong>。新任务已带上项目目录、对象 ID、查源规则和写回边界；仍需你在 Codex 中确认发送。</p><div class="launch-state"><i></i><span>如果应用没有自动打开，请点击下方按钮。</span></div><a class="button primary" href="{{ codex_url }}">在 Codex 中继续研究</a></section>
+<details class="prompt-fallback"><summary>查看将要发送的研究指令</summary><pre>{{ prompt }}</pre><button class="button secondary" type="button" data-copy-prompt>复制指令</button></details>
+{% endblock %}
+{% block scripts %}<script>const codexUrl = {{ codex_url|tojson }}; setTimeout(() => { window.location.href = codexUrl; }, 450); document.querySelector('[data-copy-prompt]')?.addEventListener('click', async (event) => { await navigator.clipboard.writeText({{ prompt|tojson }}); event.currentTarget.textContent = '已复制'; });</script>{% endblock %}

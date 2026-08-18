@@ -1,0 +1,11 @@
+id: node-pydantic-experiment-answer
+title: 先用统一失败样本验证，再更新结论
+body: 已经建立“结构化输出与校验失败恢复”实验草案。该回答是一条行动路径，目前不是已验证结论。
+node_type: answer
+status: active
+target_id: claim-pydantic-typed-output
+relation_type: answers
+parent_id: node-pydantic-retry-question
+created_at: "2026-08-18T04:02:00Z"
+updated_at: "2026-08-18T04:02:00Z"
+archived_from: null

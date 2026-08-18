@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="持续发现、验证和审核 Agent 开发技术。">
+  <title>{% block title %}Agent 技术雷达{% endblock %}</title>
+  <link rel="stylesheet" href="{{ url_for('static', path='css/app.css') }}">
+</head>
+<body>
+  <div class="shell">
+    <aside class="sidebar">
+      <a class="brand" href="/" aria-label="Agent 技术雷达首页">
+        <span class="brand-mark">AR</span>
+        <span>
+          <strong>Agent Radar</strong>
+          <small>技术判断工作台</small>
+        </span>
+      </a>
+
+      <nav aria-label="主导航">
+        <a class="nav-item {% if page == 'dashboard' %}active{% endif %}" href="/">
+          <span>总览</span><small>01</small>
+        </a>
+        <a class="nav-item {% if page == 'graph' %}active{% endif %}" href="/graph">
+          <span>技术关系图</span><small>02</small>
+        </a>
+        <a class="nav-item {% if page == 'discovery' %}active{% endif %}" href="/discovery">
+          <span>发现与覆盖</span><small>03</small>
+        </a>
+        <a class="nav-item {% if page == 'nodes' %}active{% endif %}" href="/nodes">
+          <span>学习笔记</span><small>04</small>
+        </a>
+        <a class="nav-item {% if page == 'changes' %}active{% endif %}" href="/changes">
+          <span>变化收件箱</span><small>05</small>
+        </a>
+        <a class="nav-item {% if page == 'reviews' %}active{% endif %}" href="/reviews">
+          <span>审核队列{% if pending_count %}<b>{{ pending_count }}</b>{% endif %}</span><small>06</small>
+        </a>
+        <a class="nav-item {% if page == 'experiments' %}active{% endif %}" href="/experiments">
+          <span>实验中心</span><small>07</small>
+        </a>
+      </nav>
+
+      <div class="sidebar-note">
+        <span class="status-dot"></span>
+        <div>
+          <strong>双来源模式</strong>
+          <p>自动研究补广度，Codex 会话保留你的学习脉络；事实仍需独立查证。</p>
+        </div>
+      </div>
+    </aside>
+
+    <main class="main">
+      {% block content %}{% endblock %}
+    </main>
+  </div>
+  <script src="{{ url_for('static', path='vendor/htmx-2.0.10.min.js') }}"></script>
+  {% block scripts %}{% endblock %}
+</body>
+</html>

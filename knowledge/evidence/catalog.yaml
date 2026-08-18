@@ -1,0 +1,61 @@
+- id: ev-pydantic-docs
+  title: Pydantic AI 官方文档
+  url: https://ai.pydantic.dev/
+  source_type: official_docs
+  publisher: Pydantic
+  retrieved_at: 2026-08-18T00:00:00Z
+  content_hash: null
+  summary: 作为种子的一手资料入口；具体断言仍需保存页面快照或精确章节定位。
+  supports_claim_ids: [claim-pydantic-typed-output]
+  contradicts_claim_ids: []
+- id: ev-pydantic-repo
+  title: pydantic/pydantic-ai 官方仓库
+  url: https://github.com/pydantic/pydantic-ai
+  source_type: official_repository
+  publisher: Pydantic
+  retrieved_at: 2026-08-18T00:00:00Z
+  content_hash: null
+  summary: 用于核查实现、版本、测试与发布记录的一手来源。
+  supports_claim_ids: []
+  contradicts_claim_ids: []
+- id: ev-openai-agents-repo
+  title: openai/openai-agents-python 官方仓库
+  url: https://github.com/openai/openai-agents-python
+  source_type: official_repository
+  publisher: OpenAI
+  retrieved_at: 2026-08-18T00:00:00Z
+  content_hash: null
+  summary: 用于核查 SDK primitives、实现、测试与发布记录的一手来源。
+  supports_claim_ids: [claim-openai-tracing]
+  contradicts_claim_ids: []
+- id: ev-langgraph-repo
+  title: langchain-ai/langgraph 官方仓库
+  url: https://github.com/langchain-ai/langgraph
+  source_type: official_repository
+  publisher: LangChain
+  retrieved_at: 2026-08-18T00:00:00Z
+  content_hash: null
+  summary: 用于核查状态、检查点和 Human-in-the-loop 设计的一手来源。
+  supports_claim_ids: [claim-langgraph-durable]
+  contradicts_claim_ids: []
+- id: ev-crewai-repo
+  title: crewAIInc/crewAI 官方仓库
+  url: https://github.com/crewAIInc/crewAI
+  source_type: official_repository
+  publisher: CrewAI
+  retrieved_at: 2026-08-18T00:00:00Z
+  content_hash: null
+  summary: 用于核查 Crews、Flows、工具集成和测试的一手来源。
+  supports_claim_ids: []
+  contradicts_claim_ids: []
+- id: ev-autogen-repo
+  title: microsoft/autogen 官方仓库
+  url: https://github.com/microsoft/autogen
+  source_type: official_repository
+  publisher: Microsoft
+  retrieved_at: 2026-08-18T00:00:00Z
+  content_hash: null
+  summary: 用于核查 AgentChat、运行时和扩展机制的一手来源。
+  supports_claim_ids: []
+  contradicts_claim_ids: []
+

@@ -1,0 +1,34 @@
+- id: change-pydantic-release-watch
+  source_id: github-pydantic-ai-releases
+  technology_id: tech-pydantic-ai
+  source_kind: GitHub Releases
+  title: Pydantic AI 已加入版本变化监控
+  url: https://github.com/pydantic/pydantic-ai/releases
+  detected_at: 2026-08-18T00:10:00Z
+  content_hash: seed-pydantic-releases
+  importance: high
+  status: new
+  summary: Demo 种子变化；接入采集器后将替换为真实 release tag、发布时间和内容哈希。
+- id: change-openai-agents-release-watch
+  source_id: github-openai-agents-releases
+  technology_id: tech-openai-agents
+  source_kind: GitHub Releases
+  title: OpenAI Agents SDK 已加入版本变化监控
+  url: https://github.com/openai/openai-agents-python/releases
+  detected_at: 2026-08-18T00:08:00Z
+  content_hash: seed-openai-agents-releases
+  importance: medium
+  status: new
+  summary: 后续只在最新 release 标识或正文哈希变化时提交给 Codex。
+- id: change-langgraph-package-watch
+  source_id: pypi-langgraph
+  technology_id: tech-langgraph
+  source_kind: PyPI
+  title: LangGraph 已加入包版本监控
+  url: https://pypi.org/project/langgraph/
+  detected_at: 2026-08-18T00:05:00Z
+  content_hash: seed-langgraph-pypi
+  importance: low
+  status: new
+  summary: 包注册表只负责版本事实，优缺点结论仍由证据和实验产生。
+

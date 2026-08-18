@@ -1,0 +1,11 @@
+id: tech-crewai-github-53228e89f2
+source_id: github-release:crewAIInc/crewAI
+technology_id: tech-crewai
+source_kind: GitHub Releases API
+title: CrewAI 发布 1.15.16
+url: https://github.com/crewAIInc/crewAI/releases/tag/1.15.16
+detected_at: '2026-08-18T03:31:41+00:00'
+content_hash: 53228e89f2e284302a098cac7ace33923162d56b46e33b8682cd23720df0196d
+importance: high
+status: new
+summary: API 返回发生变化，等待 Codex 阅读 release 内容并判断是否影响已有结论。

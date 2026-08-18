@@ -1,0 +1,42 @@
+- id: discovery-source-github-search
+  name: GitHub Repository Search API
+  source_type: repository_search
+  role: discovery
+  status: active
+  cadence: 每周
+  description: 按关键词族、topic、语言、活跃时间和规模组合扫描公开仓库。
+- id: discovery-source-official-orgs
+  name: 官方组织观察表
+  source_type: official_org_watch
+  role: discovery
+  status: active
+  cadence: 每月
+  description: 定向检查主要模型、云平台、开发者工具和研究组织的新仓库。
+- id: discovery-source-pypi
+  name: PyPI JSON API
+  source_type: package_registry
+  role: verification
+  status: active
+  cadence: 每日
+  description: 对已发现的 Python 候选包验证版本、发布和项目元数据，不承担全站搜索。
+- id: discovery-source-npm
+  name: npm Registry API
+  source_type: package_registry
+  role: verification
+  status: planned
+  cadence: 每日
+  description: 补齐 TypeScript/JavaScript Agent 技术的版本和发布信号。
+- id: discovery-source-arxiv
+  name: arXiv API
+  source_type: paper_index
+  role: discovery
+  status: planned
+  cadence: 每周
+  description: 发现尚未形成成熟开源项目的 Agent 架构、评估与多 Agent 方法。
+- id: discovery-source-curated
+  name: 社区 Landscape 与 Awesome 列表
+  source_type: curated_landscape
+  role: discovery
+  status: planned
+  cadence: 每月
+  description: 只用于发现名称和检查遗漏；不把社区描述当作事实证据。

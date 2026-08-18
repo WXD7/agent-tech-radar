@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block title %}{{ form_title }} · Agent 技术雷达{% endblock %}
+{% block content %}
+<a class="back-link" href="{{ '/nodes/' ~ node.id if node else '/nodes' }}">← 返回学习笔记</a>
+<header class="review-detail-header node-form-header">
+  <p class="eyebrow">LEARNING NOTE</p>
+  <h1>{{ form_title }}</h1>
+  <p class="lead">正文、来源和真实性状态分开保存。会话能说明知识从哪里来，但不能替代外部证据。</p>
+</header>
+
+{% if parent %}<div class="chain-context"><span>延续学习脉络</span><strong>{{ parent.title }}</strong></div>{% endif %}
+
+<form class="knowledge-form" method="post" action="{{ form_action }}">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+  <div class="form-grid two-columns">
+    <label><span>笔记类型</span><select name="node_type" required>{% for value, label in node_type_labels.items() %}<option value="{{ value }}" {% if values.node_type == value %}selected{% endif %}>{{ label }}</option>{% endfor %}</select></label>
+    <label><span>处理状态</span><select name="status" required><option value="open" {% if values.status == 'open' %}selected{% endif %}>待处理</option><option value="active" {% if values.status == 'active' %}selected{% endif %}>积累中</option><option value="resolved" {% if values.status == 'resolved' %}selected{% endif %}>已解决</option></select></label>
+  </div>
+  <label><span>标题</span><input name="title" value="{{ values.title }}" minlength="2" maxlength="120" required placeholder="用一句话说清这个知识点"></label>
+  <label><span>笔记正文</span><textarea name="body" rows="8" minlength="2" maxlength="4000" required placeholder="记录结论、适用边界、仍不确定的部分，以及下一步如何验证…">{{ values.body }}</textarea></label>
+
+  <fieldset class="provenance-fieldset"><legend>这条笔记是怎么形成的</legend>
+    <div class="form-grid two-columns">
+      <label><span>认知来源</span><select name="source_kind" required>{% for value, label in source_kind_labels.items() %}<option value="{{ value }}" {% if values.source_kind == value %}selected{% endif %}>{{ label }}</option>{% endfor %}</select></label>
+      <label><span>真实性状态</span><select name="verification_status" required>{% for value, label in verification_labels.items() %}<option value="{{ value }}" {% if values.verification_status == value %}selected{% endif %}>{{ label }}</option>{% endfor %}</select></label>
+    </div>
+    <div class="form-grid two-columns">
+      <label><span>来源 Codex 会话 <small>可多选</small></span><select name="conversation_source_ids" multiple size="{{ [conversation_sources|length, 3]|max }}">{% for source in conversation_sources %}<option value="{{ source.id }}" {% if source.id in values.conversation_source_ids %}selected{% endif %}>{{ source.title }}</option>{% endfor %}</select>{% if not conversation_sources %}<small class="field-hint"><a href="/conversations/import">先导入一段会话 →</a></small>{% endif %}</label>
+      <label><span>外部证据 <small>可多选</small></span><select name="evidence_ids" multiple size="{{ [evidence_options|length, 3]|min }}">{% for evidence in evidence_options %}<option value="{{ evidence.id }}" {% if evidence.id in values.evidence_ids %}selected{% endif %}>{{ evidence.title }}</option>{% endfor %}</select><small class="field-hint">会话来源和事实证据刻意分开。</small></label>
+    </div>
+  </fieldset>
+
+  <div class="form-grid two-columns">
+    <label><span>与核心对象的关系</span><select name="relation_type" required>{% for value, label in relation_labels.items() %}<option value="{{ value }}" {% if values.relation_type == value %}selected{% endif %}>{{ label }}</option>{% endfor %}</select></label>
+    <label><span>关联的核心对象</span><select name="target_id" required><option value="">请选择…</option>{% for option in target_options %}<option value="{{ option.id }}" {% if values.target_id == option.id %}selected{% endif %}>[ {{ option.type }} ] {{ option.label }}</option>{% endfor %}</select></label>
+  </div>
+  <label><span>上一条笔记 <small>可选，用于保留认知演化</small></span><select name="parent_id"><option value="">无，作为新的分支</option>{% for option in knowledge_options %}<option value="{{ option.id }}" {% if values.parent_id == option.id %}selected{% endif %}>{{ option.label }}</option>{% endfor %}</select></label>
+  <div class="form-note"><strong>两种“来源”承担不同职责</strong><p>Codex 会话证明你如何得到这个认识；官方文档、源码观察或实验才证明外部技术结论是否可信。</p></div>
+  <div class="decision-actions"><a class="button secondary" href="{{ '/nodes/' ~ node.id if node else '/nodes' }}">取消</a><button class="button primary" type="submit">保存学习笔记</button></div>
+</form>
+{% endblock %}

@@ -1,0 +1,11 @@
+id: node-openai-tracing-challenge
+title: “主要能力”是否足以代表跨供应商可用？
+body: tracing 被产品重点暴露，不等于它在非 OpenAI 模型、自托管存储与现有 OpenTelemetry 后端上具有同样完整度。需要把这三个边界分开验证。
+node_type: challenge
+status: open
+target_id: claim-openai-tracing
+relation_type: challenges
+parent_id: null
+created_at: "2026-08-18T04:05:00Z"
+updated_at: "2026-08-18T04:05:00Z"
+archived_from: null

@@ -1,0 +1,39 @@
+- id: popularity-tech-pydantic-ai
+  technology_id: tech-pydantic-ai
+  github_stars: 19357
+  github_forks: 2546
+  last_activity_at: "2026-08-18T03:43:26Z"
+  observed_at: "2026-08-18T03:50:00Z"
+  source_url: https://api.github.com/repos/pydantic/pydantic-ai
+
+- id: popularity-tech-openai-agents
+  technology_id: tech-openai-agents
+  github_stars: 28730
+  github_forks: 4525
+  last_activity_at: "2026-08-17T23:07:06Z"
+  observed_at: "2026-08-18T03:50:00Z"
+  source_url: https://api.github.com/repos/openai/openai-agents-python
+
+- id: popularity-tech-langgraph
+  technology_id: tech-langgraph
+  github_stars: 39890
+  github_forks: 6704
+  last_activity_at: "2026-08-16T00:22:02Z"
+  observed_at: "2026-08-18T03:50:00Z"
+  source_url: https://api.github.com/repos/langchain-ai/langgraph
+
+- id: popularity-tech-crewai
+  technology_id: tech-crewai
+  github_stars: 57223
+  github_forks: 8171
+  last_activity_at: "2026-08-18T00:41:53Z"
+  observed_at: "2026-08-18T03:50:00Z"
+  source_url: https://api.github.com/repos/crewAIInc/crewAI
+
+- id: popularity-tech-autogen
+  technology_id: tech-autogen
+  github_stars: 60477
+  github_forks: 9116
+  last_activity_at: "2026-04-15T11:59:09Z"
+  observed_at: "2026-08-18T03:50:00Z"
+  source_url: https://api.github.com/repos/microsoft/autogen

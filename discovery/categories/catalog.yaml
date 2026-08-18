@@ -1,0 +1,24 @@
+- id: discovery-category-vendor-sdk
+  name: 厂商与平台 SDK
+  description: 由模型、云或开发平台厂商提供的 Agent SDK 与运行时。
+  priority: core
+- id: discovery-category-general-framework
+  name: 通用 Agent 框架
+  description: 围绕工具、模型、上下文和 Agent 循环提供综合开发抽象。
+  priority: core
+- id: discovery-category-orchestration
+  name: 工作流与编排
+  description: 关注状态流转、持久化、路由、恢复和人机协作的编排技术。
+  priority: core
+- id: discovery-category-multi-agent
+  name: 多 Agent 协作
+  description: 以角色、通信、委托或团队运行时为主要抽象的技术。
+  priority: core
+- id: discovery-category-memory-state
+  name: 记忆与状态型 Agent
+  description: 将长期记忆、个体状态与持续学习作为核心能力的技术。
+  priority: core
+- id: discovery-category-visual-platform
+  name: 可视化与低代码平台
+  description: 面向可视化 Agent 工作流、协作搭建与自托管部署的邻近技术。
+  priority: adjacent

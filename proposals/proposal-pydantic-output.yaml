@@ -1,0 +1,18 @@
+id: proposal-pydantic-output
+title: 将类型化输出能力升级为“有条件支持”
+action: update_claim
+technology_id: tech-pydantic-ai
+target_claim_id: claim-pydantic-typed-output
+proposed_claim:
+  id: claim-pydantic-typed-output
+  capability_id: cap-structured-output
+  text: Pydantic AI 使用 Pydantic 模型表达结构化结果；在纳入技术建议前，仍需验证复杂嵌套校验失败后的重试与可观测性。
+  status: supported
+  confidence: 72
+rationale: 官方资料支持“类型化结果”的基础判断，但不能据此推断所有错误恢复场景都可靠。
+evidence_ids: [ev-pydantic-docs, ev-pydantic-repo]
+status: pending
+created_at: 2026-08-18T00:20:00Z
+reviewed_at: null
+reviewer_note: null
+

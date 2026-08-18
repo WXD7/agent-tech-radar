@@ -1,0 +1,69 @@
+- id: tech-pydantic-ai
+  name: Pydantic AI
+  kind: agent framework
+  description: 以 Python 类型和 Pydantic 数据模型为核心的 Agent 开发候选框架。
+  homepage: https://ai.pydantic.dev/
+  repository: https://github.com/pydantic/pydantic-ai
+  package: pydantic-ai
+  status: assess
+  capability_ids: [cap-structured-output, cap-tools-mcp, cap-observability]
+  discovery_category_ids: [discovery-category-general-framework]
+  source_ids: [ev-pydantic-docs, ev-pydantic-repo]
+  tags: [Python, typed, code-first]
+  last_reviewed: null
+
+- id: tech-openai-agents
+  name: OpenAI Agents SDK
+  kind: agent SDK
+  description: 围绕 Agent、工具、交接、护栏、会话和追踪构建应用的候选 SDK。
+  homepage: https://openai.github.io/openai-agents-python/
+  repository: https://github.com/openai/openai-agents-python
+  package: openai-agents
+  status: assess
+  capability_ids: [cap-tools-mcp, cap-observability, cap-human-loop]
+  discovery_category_ids: [discovery-category-vendor-sdk, discovery-category-multi-agent]
+  source_ids: [ev-openai-agents-repo]
+  tags: [Python, SDK, tracing]
+  last_reviewed: null
+
+- id: tech-langgraph
+  name: LangGraph
+  kind: orchestration framework
+  description: 面向有状态、长运行 Agent 工作流的图式编排候选框架。
+  homepage: https://langchain-ai.github.io/langgraph/
+  repository: https://github.com/langchain-ai/langgraph
+  package: langgraph
+  status: assess
+  capability_ids: [cap-orchestration, cap-durability, cap-human-loop]
+  discovery_category_ids: [discovery-category-orchestration, discovery-category-memory-state]
+  source_ids: [ev-langgraph-repo]
+  tags: [Python, graph, stateful]
+  last_reviewed: null
+
+- id: tech-crewai
+  name: CrewAI
+  kind: multi-agent framework
+  description: 以角色协作和流程编排为主要抽象的多 Agent 候选框架。
+  homepage: https://docs.crewai.com/
+  repository: https://github.com/crewAIInc/crewAI
+  package: crewai
+  status: watch
+  capability_ids: [cap-orchestration, cap-tools-mcp, cap-observability]
+  discovery_category_ids: [discovery-category-multi-agent, discovery-category-orchestration]
+  source_ids: [ev-crewai-repo]
+  tags: [Python, multi-agent, flows]
+  last_reviewed: null
+
+- id: tech-autogen
+  name: AutoGen
+  kind: multi-agent framework
+  description: 提供 AgentChat 与事件驱动运行时等抽象的多 Agent 候选框架。
+  homepage: https://microsoft.github.io/autogen/stable/
+  repository: https://github.com/microsoft/autogen
+  package: autogen-agentchat
+  status: watch
+  capability_ids: [cap-orchestration, cap-tools-mcp, cap-observability]
+  discovery_category_ids: [discovery-category-multi-agent, discovery-category-general-framework]
+  source_ids: [ev-autogen-repo]
+  tags: [Python, multi-agent, event-driven]
+  last_reviewed: null

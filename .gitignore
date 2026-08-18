@@ -1,0 +1,13 @@
+.DS_Store
+.env
+.env.*
+!.env.example
+.radar/
+.pytest_cache/
+__pycache__/
+*.py[cod]
+.venv/
+
+# Codex task identifiers and imported conversation metadata are personal by default.
+knowledge/conversations/*.yaml
+!knowledge/conversations/README.md

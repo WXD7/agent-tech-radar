@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %}{{ source.title }} · Codex 会话来源{% endblock %}
+{% block content %}
+<a class="back-link" href="/nodes">← 返回学习笔记</a>
+{% if request.query_params.get('imported') %}<div class="success-banner">会话来源已登记。下一步在 Codex 中确认发送同步指令。</div>{% endif %}
+<header class="conversation-hero">
+  <div><p class="eyebrow">CODEX CONVERSATION · {{ {'pending':'待同步','synced':'已同步','stale':'有新内容','unavailable':'不可用'}[source.status] }}</p><h1>{{ source.title }}</h1><p class="lead">{{ source.summary or '这段会话尚未提炼。打开原任务后，Codex 会按固定规则生成学习笔记和待查证项。' }}</p></div>
+  <div class="conversation-meta"><span>任务 ID</span><code>{{ source.thread_id }}</code><span>导入时间</span><strong>{{ source.imported_at[:10] }}</strong><span>最近同步</span><strong>{{ source.last_synced_at[:10] if source.last_synced_at else '尚未同步' }}</strong></div>
+</header>
+
+<section class="sync-callout"><div><span class="kicker">SYNC WITH USER CONFIRMATION</span><h2>回到原 Codex 会话，提炼这次学习</h2><p>按钮会打开原任务并预填指令，不会替你发送。请在 Codex 中检查后确认发送。</p></div><a class="button primary" href="{{ codex_url }}">打开 Codex 并同步</a></section>
+
+<details class="prompt-fallback"><summary>Codex 没有自动打开？查看并复制同步指令</summary><pre>{{ prompt }}</pre><button class="button secondary" type="button" data-copy-prompt>复制指令</button></details>
+
+<section class="node-list-section"><div class="section-heading"><div><span class="kicker">DISTILLED NOTES</span><h2>从本会话提炼的笔记</h2></div><span class="badge neutral">{{ notes|length }} 条</span></div><div class="knowledge-node-grid">{% for node in notes %}<a class="knowledge-node-card {{ node.node_type }}" href="/nodes/{{ node.id }}"><div class="node-card-top"><span>{{ source_kind_labels[node.source_kind] }}</span><small class="verification {{ node.verification_status }}">{{ verification_labels[node.verification_status] }}</small></div><h2>{{ node.title }}</h2><p>{{ node.body }}</p><div class="node-card-target">查看来源与证据 →</div></a>{% else %}<div class="node-empty-card"><strong>等待第一次同步</strong><p>在 Codex 中完成同步后，刷新这里即可看到提炼出的笔记。</p></div>{% endfor %}</div></section>
+{% endblock %}
+{% block scripts %}<script>document.querySelector('[data-copy-prompt]')?.addEventListener('click', async (event) => { await navigator.clipboard.writeText({{ prompt|tojson }}); event.currentTarget.textContent = '已复制'; });</script>{% endblock %}

@@ -1,0 +1,11 @@
+id: tech-pydantic-ai-pypi-410a21d02a
+source_id: pypi:pydantic-ai
+technology_id: tech-pydantic-ai
+source_kind: PyPI JSON API
+title: Pydantic AI 包版本为 2.31.0
+url: https://pypi.org/project/pydantic-ai/2.31.0/
+detected_at: '2026-08-18T03:31:41+00:00'
+content_hash: 410a21d02a8ee510d5478490aa75a52e02bbe49481e6994e6c8dbf007ef11251
+importance: medium
+status: new
+summary: 包版本事实已记录；这本身不代表技术优劣发生变化。

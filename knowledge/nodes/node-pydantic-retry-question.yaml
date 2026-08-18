@@ -1,0 +1,11 @@
+id: node-pydantic-retry-question
+title: 复杂嵌套校验失败时，自动重试的边界在哪里？
+body: 现有资料证明了类型化输出的基本能力，但还没有说清多层嵌套 Schema 出错时由谁触发重试、最多重试几次，以及失败信息能否完整进入 trace。
+node_type: question
+status: open
+target_id: claim-pydantic-typed-output
+relation_type: questions
+parent_id: null
+created_at: "2026-08-18T04:00:00Z"
+updated_at: "2026-08-18T04:00:00Z"
+archived_from: null

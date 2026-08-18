@@ -1,0 +1,11 @@
+id: tech-langgraph-github-b9364044cd
+source_id: github-release:langchain-ai/langgraph
+technology_id: tech-langgraph
+source_kind: GitHub Releases API
+title: LangGraph 发布 1.2.11
+url: https://github.com/langchain-ai/langgraph/releases/tag/1.2.11
+detected_at: '2026-08-18T03:31:41+00:00'
+content_hash: b9364044cdbfef379664aa94f9d216976ef140163f06f8e7b8663fe1e57a16a9
+importance: high
+status: new
+summary: API 返回发生变化，等待 Codex 阅读 release 内容并判断是否影响已有结论。

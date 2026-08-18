@@ -1,0 +1,60 @@
+- id: discovery-query-agent-framework
+  name: Agent framework
+  query: '"agent framework" in:name,description,readme stars:>200 archived:false'
+  category_ids: [discovery-category-general-framework]
+  ecosystem_focus: 全生态
+  cadence: 每周
+- id: discovery-query-agent-sdk
+  name: Agent SDK
+  query: '"agent sdk" in:name,description,readme stars:>200 archived:false'
+  category_ids: [discovery-category-vendor-sdk, discovery-category-general-framework]
+  ecosystem_focus: 全生态
+  cadence: 每周
+- id: discovery-query-multi-agent
+  name: Multi-agent framework
+  query: '"multi-agent" in:name,description,readme stars:>200 archived:false'
+  category_ids: [discovery-category-multi-agent]
+  ecosystem_focus: 全生态
+  cadence: 每周
+- id: discovery-query-orchestration
+  name: Agent orchestration
+  query: '"agent orchestration" in:name,description,readme stars:>100 archived:false'
+  category_ids: [discovery-category-orchestration]
+  ecosystem_focus: 全生态
+  cadence: 每周
+- id: discovery-query-workflow
+  name: Agent workflow
+  query: '"agent workflow" in:name,description,readme stars:>100 archived:false'
+  category_ids: [discovery-category-orchestration]
+  ecosystem_focus: 全生态
+  cadence: 每周
+- id: discovery-query-stateful
+  name: Stateful and memory agents
+  query: '"stateful agents" memory in:name,description,readme stars:>50 archived:false'
+  category_ids: [discovery-category-memory-state]
+  ecosystem_focus: 全生态
+  cadence: 每周
+- id: discovery-query-topic-ai-agents
+  name: GitHub topic ai-agents
+  query: 'topic:ai-agents stars:>200 archived:false'
+  category_ids: [discovery-category-general-framework]
+  ecosystem_focus: 全生态
+  cadence: 每周
+- id: discovery-query-topic-agent-framework
+  name: GitHub topic agent-framework
+  query: 'topic:agent-framework stars:>50 archived:false'
+  category_ids: [discovery-category-general-framework]
+  ecosystem_focus: 全生态
+  cadence: 每周
+- id: discovery-query-typescript
+  name: TypeScript agent framework
+  query: '"agent framework" language:TypeScript in:name,description,readme stars:>50 archived:false'
+  category_ids: [discovery-category-general-framework, discovery-category-visual-platform]
+  ecosystem_focus: TypeScript
+  cadence: 每周
+- id: discovery-query-dotnet
+  name: .NET agent SDK
+  query: '"agent sdk" language:C# in:name,description,readme stars:>20 archived:false'
+  category_ids: [discovery-category-vendor-sdk]
+  ecosystem_focus: .NET
+  cadence: 每周

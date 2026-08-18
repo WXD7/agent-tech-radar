@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block title %}实验中心 · Agent 技术雷达{% endblock %}
+{% block content %}
+<header class="page-header"><p class="eyebrow">REPRODUCIBLE CHECKS</p><h1>结论不够硬<br><em>就让代码来回答</em></h1><p class="lead">每个实验保存假设、方法、环境、指标、日志和结果；框架升级后可以原样重跑。</p></header>
+<section class="experiment-grid">
+  {% for experiment in experiments %}
+  <article class="experiment-card"><div class="experiment-topline"><span class="review-status {{ 'accepted' if experiment.status == 'completed' else 'pending' }}">{{ {'planned':'计划中','running':'运行中','completed':'已完成','failed':'失败'}[experiment.status] }}</span><small>{{ experiment.last_run_at[:10] if experiment.last_run_at else '尚未运行' }}</small></div><h2>{{ experiment.name }}</h2><p>{{ experiment.hypothesis }}</p><dl><div><dt>方法</dt><dd>{{ experiment.method }}</dd></div><div><dt>可复现</dt><dd>{{ experiment.reproducibility }}</dd></div>{% if experiment.result_summary %}<div><dt>结果</dt><dd>{{ experiment.result_summary }}</dd></div>{% endif %}</dl><div class="tag-row">{% for technology_id in experiment.technology_ids %}<span>{{ technologies[technology_id].name }}</span>{% endfor %}</div></article>
+  {% endfor %}
+</section>
+{% endblock %}
+

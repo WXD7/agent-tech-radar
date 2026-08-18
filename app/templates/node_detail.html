@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block title %}{{ node.title }} · Agent 技术雷达{% endblock %}
+{% block content %}
+<a class="back-link" href="/nodes">← 返回学习笔记</a>
+{% if request.query_params.get('created') %}<div class="success-banner">笔记已加入学习地图。</div>{% endif %}
+{% if request.query_params.get('updated') %}<div class="success-banner">笔记已更新。</div>{% endif %}
+{% if request.query_params.get('archived') %}<div class="success-banner neutral-banner">笔记已归档，不再显示于图谱，但可随时恢复。</div>{% endif %}
+{% if request.query_params.get('restored') %}<div class="success-banner">笔记已恢复到图谱。</div>{% endif %}
+
+<header class="knowledge-detail-hero {{ node.node_type }}">
+  <div>
+    <p class="eyebrow">{{ source_kind_labels[node.source_kind] }} · {{ verification_labels[node.verification_status] }}</p>
+    <h1>{{ node.title }}</h1>
+    <p class="lead">{{ node.body }}</p>
+  </div>
+  <div class="knowledge-detail-meta"><span>{{ node_type_labels[node.node_type] }}</span><span>创建 {{ node.created_at[:10] }}</span><span>更新 {{ node.updated_at[:10] }}</span><span>关系 {{ relation_labels[node.relation_type] }}</span></div>
+</header>
+
+<section class="knowledge-detail-grid">
+  <div>
+    <div class="section-heading"><div><span class="kicker">LEARNING TRAIL</span><h2>这条认识如何演化</h2></div></div>
+    <div class="chain-stack">
+      {% if parent %}<a class="chain-card parent" href="/nodes/{{ parent.id }}"><span>上一条 · {{ node_type_labels[parent.node_type] }}</span><strong>{{ parent.title }}</strong></a>{% endif %}
+      <div class="chain-card current"><span>当前笔记 · {{ verification_labels[node.verification_status] }}</span><strong>{{ node.title }}</strong></div>
+      {% for child in children %}<a class="chain-card child {% if child.status == 'archived' %}archived{% endif %}" href="/nodes/{{ child.id }}"><span>后续 · {{ node_type_labels[child.node_type] }}</span><strong>{{ child.title }}</strong></a>{% else %}<p class="empty-state">还没有后续修正或补充。</p>{% endfor %}
+    </div>
+
+    <div class="source-evidence-grid">
+      <section><span class="kicker">COGNITIVE PROVENANCE</span><h2>来自哪些会话</h2>{% for source in conversation_sources %}<a class="provenance-card" href="/conversations/{{ source.id }}"><strong>{{ source.title }}</strong><p>{{ source.summary or '这段会话是该笔记的认知来源。' }}</p><small>打开会话记录 →</small></a>{% else %}<p class="empty-state">这是一条{{ source_kind_labels[node.source_kind] }}，未关联 Codex 会话。</p>{% endfor %}</section>
+      <section><span class="kicker">FACTUAL EVIDENCE</span><h2>用什么证明</h2>{% for evidence in evidence_items %}<a class="provenance-card evidence" href="{{ evidence.url }}" target="_blank" rel="noreferrer"><strong>{{ evidence.title }}</strong><p>{{ evidence.summary }}</p><small>{{ evidence.source_type }} · 查看原始来源 →</small></a>{% else %}<p class="empty-state">尚未绑定外部证据；当前状态为“{{ verification_labels[node.verification_status] }}”。</p>{% endfor %}</section>
+    </div>
+  </div>
+  <aside class="detail-aside">
+    <div class="aside-card"><span class="kicker">TARGET</span><h2>核心关联</h2>{% if target %}<a class="target-link" href="/graph?focus={{ target.id }}"><small>{{ target.type }}</small><strong>{{ target.label }}</strong><span>在导航图中查看 →</span></a>{% else %}<p class="empty-state">{{ node.target_id }}</p>{% endif %}</div>
+    {% if node.status != 'archived' %}
+    <div class="aside-card codex-action-card"><span class="kicker">CONTINUE IN CODEX</span><h2>继续研究这条笔记</h2><p>创建一段带完整上下文的新 Codex 会话。你可以追问、质疑、查源或设计实验，完成后再同步回来。</p><a class="button primary full-button" href="{{ codex_research_url }}">在 Codex 中继续研究</a><a class="button secondary full-button" href="/nodes/new?target_id={{ node.target_id }}&parent_id={{ node.id }}&node_type=note&relation_type=extends">记录手写笔记</a></div>
+    <div class="aside-card manage-card"><span class="kicker">MANAGE</span><h2>管理笔记</h2><a class="button secondary full-button" href="/nodes/{{ node.id }}/edit">编辑笔记与来源</a><form method="post" action="/nodes/{{ node.id }}/archive"><input type="hidden" name="csrf_token" value="{{ csrf_token }}"><button class="button danger full-button" type="submit">归档笔记</button></form><p>归档可恢复，不会破坏历史。</p></div>
+    {% else %}
+    <div class="aside-card manage-card"><span class="kicker">ARCHIVED</span><h2>恢复笔记</h2><form method="post" action="/nodes/{{ node.id }}/restore"><input type="hidden" name="csrf_token" value="{{ csrf_token }}"><button class="button primary full-button" type="submit">恢复到图谱</button></form></div>
+    {% endif %}
+  </aside>
+</section>
+{% endblock %}

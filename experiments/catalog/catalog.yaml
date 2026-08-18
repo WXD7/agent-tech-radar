@@ -1,0 +1,21 @@
+- id: exp-source-coverage
+  name: 种子技术来源覆盖检查
+  status: completed
+  hypothesis: 每个进入观察区的技术至少应该绑定官方网站、官方仓库和明确的能力分类。
+  technology_ids: [tech-pydantic-ai, tech-openai-agents, tech-langgraph, tech-crewai, tech-autogen]
+  claim_ids: []
+  method: 读取结构化目录，检查 homepage、repository、capability_ids 和 source_ids 是否完整。
+  result_summary: 5 个种子技术均满足最小来源覆盖要求；结论级证据仍需继续补全。
+  reproducibility: 在 agent-radar 环境运行 python experiments/source_coverage/run.py。
+  last_run_at: 2026-08-18T00:30:00Z
+- id: exp-structured-output
+  name: 结构化输出与校验失败恢复
+  status: planned
+  hypothesis: 不同 Agent 框架在复杂嵌套输出失败时，重试行为、错误暴露和 trace 完整度存在可测量差异。
+  technology_ids: [tech-pydantic-ai, tech-openai-agents, tech-langgraph]
+  claim_ids: [claim-pydantic-typed-output]
+  method: 使用同一模型、同一嵌套 schema 和固定错误样本，记录成功率、重试次数、错误可读性与 trace。
+  result_summary: null
+  reproducibility: 固定模型版本、随机种子、依赖锁和测试样本；保存完整日志。
+  last_run_at: null
+

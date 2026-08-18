@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block title %}导入 Codex 会话 · Agent 技术雷达{% endblock %}
+{% block content %}
+<a class="back-link" href="/nodes">← 返回学习笔记</a>
+<header class="review-detail-header node-form-header"><p class="eyebrow">IMPORT ONE TASK</p><h1>导入一段 Codex 会话</h1><p class="lead">只登记你明确选择的任务，不读取或扫描其他私人会话。导入后，系统会为这段任务准备一条“同步到雷达”的 Codex 指令。</p></header>
+{% if error %}<div class="success-banner error-banner">{{ error }}</div>{% endif %}
+<form class="knowledge-form import-form" method="post" action="/conversations/import">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+  <label><span>这段会话的标题</span><input name="title" value="{{ values.title }}" minlength="2" maxlength="160" required placeholder="例如：Pydantic AI 的重试边界"></label>
+  <label><span>Codex 会话链接或任务 ID</span><textarea name="thread_reference" rows="3" minlength="8" maxlength="1000" required placeholder="粘贴 Codex 任务链接、codex://threads/... 或 UUID">{{ values.thread_reference }}</textarea></label>
+  <div class="privacy-note"><strong>你在导入什么</strong><p>这里先保存任务 ID 和标题，不会从网页静默读取会话正文。下一步会打开原 Codex 任务并预填同步指令，由你确认发送后，Codex 才会总结当前会话。</p></div>
+  <div class="decision-actions"><a class="button secondary" href="/nodes">取消</a><button class="button primary" type="submit">登记并准备同步</button></div>
+</form>
+{% endblock %}

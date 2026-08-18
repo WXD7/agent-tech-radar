@@ -1,0 +1,11 @@
+id: tech-pydantic-ai-github-2e58c87e59
+source_id: github-release:pydantic/pydantic-ai
+technology_id: tech-pydantic-ai
+source_kind: GitHub Releases API
+title: Pydantic AI 发布 v2.31.1
+url: https://github.com/pydantic/pydantic-ai/releases/tag/v2.31.1
+detected_at: '2026-08-18T03:31:41+00:00'
+content_hash: 2e58c87e59e3a1b20bcbfcf8057950cec9788d5fa2e7ef03894d1c719931f69a
+importance: high
+status: new
+summary: API 返回发生变化，等待 Codex 阅读 release 内容并判断是否影响已有结论。

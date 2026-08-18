@@ -1,0 +1,11 @@
+id: tech-crewai-pypi-09836ba8f7
+source_id: pypi:crewai
+technology_id: tech-crewai
+source_kind: PyPI JSON API
+title: CrewAI 包版本为 1.15.16
+url: https://pypi.org/project/crewai/1.15.16/
+detected_at: '2026-08-18T03:31:41+00:00'
+content_hash: 09836ba8f769559dfef43dc589ee642b0f70910bed300709d82d6d9ded4afafb
+importance: medium
+status: new
+summary: 包版本事实已记录；这本身不代表技术优劣发生变化。

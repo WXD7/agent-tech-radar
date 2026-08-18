@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block title %}技术关系图 · Agent 技术雷达{% endblock %}
+{% block content %}
+<header class="page-header compact-header">
+  <div>
+    <p class="eyebrow">NAVIGATION MAP · NOT THE NOTE ITSELF</p>
+    <h1>先看清技术路径<br><em>再深入会话与证据</em></h1>
+    <p class="lead">默认只显示技术路线、框架和你的学习笔记，减少视觉噪音。点击节点查看完整说明，再进入 Codex 继续研究；圆越大只代表当前规模与活跃信号越强。</p>
+  </div>
+  <a class="button primary header-action" href="/conversations/import">导入 Codex 会话</a>
+</header>
+<section class="graph-workspace">
+  <aside class="graph-controls">
+    <label class="graph-search-label" for="graph-search">搜索图谱</label>
+    <div class="graph-search-wrap"><input id="graph-search" type="search" placeholder="技术、结论或问题…"><button id="graph-search-clear" type="button" aria-label="清除搜索">×</button></div>
+    <div class="layout-controls" aria-label="图谱布局">
+      <button type="button" class="layout-button active" data-layout="organic">自然</button>
+      <button type="button" class="layout-button" data-layout="hierarchy">分层</button>
+      <button type="button" class="layout-button" data-layout="rings">环形</button>
+    </div>
+    <span class="kicker">显示节点</span>
+    {% for kind, count in node_counts.items() %}
+    <label class="filter-option">
+      <input type="checkbox" data-node-filter="{{ kind }}" {% if kind in ['technology', 'candidate', 'discovery_category', 'knowledge'] %}checked{% endif %}>
+      <span class="legend-dot {{ kind }}"></span>
+      <span>{{ {'technology':'已评估技术','candidate':'候选技术','discovery_category':'技术路线','capability':'能力','claim':'正式结论','evidence':'外部证据','experiment':'实验','knowledge':'学习笔记'}[kind] }}</span>
+      <small>{{ count }}</small>
+    </label>
+    {% endfor %}
+    <button id="graph-fit" class="fit-button" type="button">恢复全图</button>
+    <div class="graph-help popularity-help"><strong>大小 = 规模 + 活跃</strong><div class="size-legend"><i></i><i></i><i></i></div><p>当前取 GitHub Star、Fork 与最近活动时间。候选节点仅代表“值得评估”，并不是正面结论。</p></div>
+    <div class="graph-help"><strong>先简后深</strong><p>需要核验结论时，再勾选“正式结论、外部证据、实验”。笔记的会话来源不会作为额外节点塞入图中。</p></div>
+  </aside>
+  <div class="graph-canvas-wrap">
+    <div id="knowledge-graph" class="graph-canvas" aria-label="Agent 技术知识关系图"></div>
+    <div id="graph-empty" class="graph-empty" hidden>没有找到匹配节点</div>
+    <div id="graph-inspector" class="graph-inspector"><span>选择一个节点</span><h2>从路线开始探索</h2><p>这里显示完整内容、直接关联和来源状态，并可进入 Codex 继续研究。</p></div>
+  </div>
+</section>
+{% endblock %}
+{% block scripts %}
+<script src="{{ url_for('static', path='vendor/cytoscape-3.34.0.min.js') }}"></script>
+<script src="{{ url_for('static', path='js/graph.js') }}"></script>
+{% endblock %}
