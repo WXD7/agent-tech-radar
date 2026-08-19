@@ -6,11 +6,13 @@ from typing import TypeVar
 import yaml
 from pydantic import BaseModel
 
+from radar.documents import featured_sections, load_document_text
 from radar.models import (
     Capability,
     Catalog,
     Change,
     Claim,
+    ConversationAnchor,
     ConversationSource,
     DiscoveryCandidate,
     DiscoveryCategory,
@@ -19,9 +21,11 @@ from radar.models import (
     DiscoverySource,
     Evidence,
     Experiment,
+    KnowledgeMap,
     KnowledgeNode,
     PopularitySignal,
     Proposal,
+    ResearchDocument,
     Technology,
 )
 from radar.paths import INBOX_ROOT, KNOWLEDGE_ROOT, PROPOSALS_ROOT, PROJECT_ROOT
@@ -40,12 +44,18 @@ def normalize_yaml(value):
     return value
 
 
-def _load_records(directory: Path, model: type[ModelT]) -> list[ModelT]:
+def _load_records(
+    directory: Path,
+    model: type[ModelT],
+    *,
+    recursive: bool = False,
+) -> list[ModelT]:
     records: dict[str, ModelT] = {}
     if not directory.exists():
         return []
 
-    for path in sorted(directory.glob("*.yaml")):
+    paths = directory.rglob("*.yaml") if recursive else directory.glob("*.yaml")
+    for path in sorted(paths):
         raw = normalize_yaml(yaml.safe_load(path.read_text(encoding="utf-8")))
         if raw is None:
             continue
@@ -72,9 +82,20 @@ def load_catalog(project_root: Path = PROJECT_ROOT) -> Catalog:
         changes=_load_records(inbox / "changes", Change),
         experiments=_load_records(experiments, Experiment),
         popularity_signals=_load_records(inbox / "metrics", PopularitySignal),
-        knowledge_nodes=_load_records(knowledge / "nodes", KnowledgeNode),
+        knowledge_nodes=_load_records(
+            knowledge / "nodes", KnowledgeNode, recursive=True
+        ),
         conversation_sources=_load_records(
             knowledge / "conversations", ConversationSource
+        ),
+        conversation_anchors=_load_records(
+            knowledge / "conversations" / "anchors", ConversationAnchor
+        ),
+        research_documents=_load_records(
+            knowledge / "documents", ResearchDocument, recursive=True
+        ),
+        knowledge_maps=_load_records(
+            knowledge / "maps", KnowledgeMap, recursive=True
         ),
         discovery_categories=_load_records(discovery / "categories", DiscoveryCategory),
         discovery_sources=_load_records(discovery / "sources", DiscoverySource),
@@ -165,7 +186,10 @@ def _popularity_visuals(catalog: Catalog) -> dict[str, dict[str, int | str]]:
     return visuals
 
 
-def graph_elements(catalog: Catalog) -> list[dict]:
+def graph_elements(
+    catalog: Catalog,
+    project_root: Path = PROJECT_ROOT,
+) -> list[dict]:
     nodes: list[dict] = []
     edges: list[dict] = []
     popularity_visuals = _popularity_visuals(catalog)
@@ -405,6 +429,7 @@ def graph_elements(catalog: Catalog) -> list[dict]:
                     "created_at": item.created_at,
                     "source_kind": item.source_kind,
                     "verification_status": item.verification_status,
+                    "visibility": item.visibility,
                 }
             }
         )
@@ -419,6 +444,73 @@ def graph_elements(catalog: Catalog) -> list[dict]:
             edge_target,
             item.relation_type,
         )
+
+    for document in catalog.research_documents:
+        if document.status == "archived":
+            continue
+        try:
+            text = load_document_text(document, project_root)
+            sections = featured_sections(document, text)
+        except (FileNotFoundError, OSError, ValueError):
+            text = ""
+            sections = []
+        nodes.append(
+            {
+                "data": {
+                    "id": document.id,
+                    "label": document.title,
+                    "type": "document",
+                    "status": document.status,
+                    "description": document.summary,
+                    "href": f"/documents/{document.id}",
+                    "research_href": f"/documents/{document.id}/research",
+                    "visibility": document.visibility,
+                    "verification_status": document.verification_status,
+                    "section_count": len(sections),
+                    "character_count": len(text),
+                }
+            }
+        )
+        for section in sections:
+            section_id = f"{document.id}-{section.anchor}"
+            nodes.append(
+                {
+                    "data": {
+                        "id": section_id,
+                        "label": section.title,
+                        "type": "section",
+                        "status": "chapter",
+                        "description": section.summary or "打开文档阅读这一章的完整内容。",
+                        "href": f"/documents/{document.id}#{section.anchor}",
+                        "research_href": (
+                            f"/documents/{document.id}/research?section={section.anchor}"
+                        ),
+                        "document_id": document.id,
+                        "section_anchor": section.anchor,
+                        "visibility": document.visibility,
+                    }
+                }
+            )
+            add_edge(
+                f"edge-{document.id}-contains-{section.anchor}",
+                document.id,
+                section_id,
+                "contains",
+            )
+            for context_id in document.section_context_ids.get(section.anchor, []):
+                add_edge(
+                    f"edge-{section_id}-discusses-{context_id}",
+                    section_id,
+                    context_id,
+                    "discusses",
+                )
+        for context_id in [*document.technology_ids, *document.capability_ids]:
+            add_edge(
+                f"edge-{document.id}-covers-{context_id}",
+                document.id,
+                context_id,
+                "covers",
+            )
 
     node_ids = {item["data"]["id"] for item in nodes}
     valid_edges = [

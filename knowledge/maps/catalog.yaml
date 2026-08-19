@@ -1,0 +1,28 @@
+- id: map-agent-tech-landscape
+  title: Agent 技术全景
+  description: 面向团队共享的 Agent 技术、候选框架、能力、结论、证据与实验总览；私人研究文档与认知片段不会自动进入这张图。
+  visibility: shared
+  selection_mode: overview
+  status: active
+  conversation_source_ids: []
+  node_ids: []
+  context_ids: []
+  include_evidence: true
+  created_at: '2026-08-18T00:00:00Z'
+  updated_at: '2026-08-18T00:00:00Z'
+- id: map-european-legal-agent
+  title: 欧洲法律 Agent：框架与可靠性
+  description: 以公开研究长文为主体的专题图谱，聚焦 Agent 框架选型、PydanticAI V2、Guardrail、法律幻觉验证、持久恢复与评估闭环。
+  visibility: shared
+  selection_mode: topic
+  status: active
+  conversation_source_ids: []
+  document_ids:
+  - doc-european-legal-agent
+  node_ids: []
+  context_ids:
+  - tech-pydantic-ai
+  - tech-langgraph
+  include_evidence: true
+  created_at: '2026-08-19T02:10:33Z'
+  updated_at: '2026-08-19T02:50:53Z'

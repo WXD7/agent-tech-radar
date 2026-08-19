@@ -221,6 +221,7 @@ class KnowledgeNode(StrictModel):
         "verified",
         "contested",
     ] = "unverified"
+    visibility: Literal["private", "shared"] = "shared"
 
 
 class ConversationSource(StrictModel):
@@ -231,10 +232,77 @@ class ConversationSource(StrictModel):
     status: Literal["pending", "synced", "stale", "unavailable"] = "pending"
     summary: str | None = None
     note_ids: list[str] = Field(default_factory=list)
+    document_ids: list[str] = Field(default_factory=list)
     imported_at: str
     updated_at: str
     last_synced_at: str | None = None
     last_synced_turn_id: str | None = None
+    visibility: Literal["private"] = "private"
+
+
+class ConversationAnchor(StrictModel):
+    id: str
+    node_id: str
+    conversation_source_id: str
+    turn_id: str
+    item_id: str
+    role: Literal["user", "assistant"]
+    anchor_kind: Literal[
+        "question_context",
+        "answer_basis",
+        "correction",
+        "decision_context",
+    ]
+    excerpt: str = Field(min_length=2, max_length=4000)
+    locator_text: str = Field(min_length=2, max_length=240)
+    content_hash: str = Field(min_length=64, max_length=64)
+    captured_at: str
+    status: Literal["active", "archived"] = "active"
+
+
+class ResearchDocument(StrictModel):
+    id: str
+    title: str = Field(min_length=2, max_length=200)
+    summary: str = Field(min_length=2, max_length=1200)
+    content_path: str = Field(min_length=3, max_length=500)
+    document_kind: Literal[
+        "research_note",
+        "architecture_note",
+        "decision_record",
+    ] = "research_note"
+    status: Literal["draft", "active", "archived"] = "active"
+    visibility: Literal["private", "shared"] = "shared"
+    verification_status: Literal[
+        "unverified",
+        "researching",
+        "partially_verified",
+        "verified",
+        "contested",
+        "mixed",
+    ] = "mixed"
+    conversation_source_ids: list[str] = Field(default_factory=list)
+    technology_ids: list[str] = Field(default_factory=list)
+    capability_ids: list[str] = Field(default_factory=list)
+    featured_section_anchors: list[str] = Field(default_factory=list)
+    section_context_ids: dict[str, list[str]] = Field(default_factory=dict)
+    created_at: str
+    updated_at: str
+
+
+class KnowledgeMap(StrictModel):
+    id: str
+    title: str = Field(min_length=2, max_length=120)
+    description: str = Field(min_length=2, max_length=600)
+    visibility: Literal["private", "shared"] = "shared"
+    selection_mode: Literal["overview", "topic"]
+    status: Literal["active", "archived"] = "active"
+    conversation_source_ids: list[str] = Field(default_factory=list)
+    document_ids: list[str] = Field(default_factory=list)
+    node_ids: list[str] = Field(default_factory=list)
+    context_ids: list[str] = Field(default_factory=list)
+    include_evidence: bool = True
+    created_at: str
+    updated_at: str
 
 
 class Catalog(StrictModel):
@@ -253,6 +321,9 @@ class Catalog(StrictModel):
     discovery_candidates: list[DiscoveryCandidate] = Field(default_factory=list)
     discovery_runs: list[DiscoveryRun] = Field(default_factory=list)
     conversation_sources: list[ConversationSource] = Field(default_factory=list)
+    conversation_anchors: list[ConversationAnchor] = Field(default_factory=list)
+    research_documents: list[ResearchDocument] = Field(default_factory=list)
+    knowledge_maps: list[KnowledgeMap] = Field(default_factory=list)
 
     def technology(self, technology_id: str) -> Technology | None:
         return next((item for item in self.technologies if item.id == technology_id), None)
@@ -275,6 +346,33 @@ class Catalog(StrictModel):
     def conversation_source(self, source_id: str) -> ConversationSource | None:
         return next(
             (item for item in self.conversation_sources if item.id == source_id),
+            None,
+        )
+
+    def conversation_anchor(self, anchor_id: str) -> ConversationAnchor | None:
+        return next(
+            (item for item in self.conversation_anchors if item.id == anchor_id),
+            None,
+        )
+
+    def anchors_for_node(self, node_id: str) -> list[ConversationAnchor]:
+        return [
+            item for item in self.conversation_anchors if item.node_id == node_id
+        ]
+
+    def anchors_for_conversation(self, source_id: str) -> list[ConversationAnchor]:
+        return [
+            item
+            for item in self.conversation_anchors
+            if item.conversation_source_id == source_id
+        ]
+
+    def knowledge_map(self, map_id: str) -> KnowledgeMap | None:
+        return next((item for item in self.knowledge_maps if item.id == map_id), None)
+
+    def research_document(self, document_id: str) -> ResearchDocument | None:
+        return next(
+            (item for item in self.research_documents if item.id == document_id),
             None,
         )
 

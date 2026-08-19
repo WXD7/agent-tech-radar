@@ -1,17 +1,35 @@
 {% extends "base.html" %}
 {% block title %}{{ source.title }} · Codex 会话来源{% endblock %}
 {% block content %}
-<a class="back-link" href="/nodes">← 返回学习笔记</a>
-{% if request.query_params.get('imported') %}<div class="success-banner">会话来源已登记。下一步在 Codex 中确认发送同步指令。</div>{% endif %}
+<a class="back-link" href="/documents">← 返回研究文档</a>
+{% if request.query_params.get('imported') %}<div class="success-banner">会话来源已登记。下一步在 Codex 中确认发送沉淀指令。</div>{% endif %}
 <header class="conversation-hero">
-  <div><p class="eyebrow">CODEX CONVERSATION · {{ {'pending':'待同步','synced':'已同步','stale':'有新内容','unavailable':'不可用'}[source.status] }}</p><h1>{{ source.title }}</h1><p class="lead">{{ source.summary or '这段会话尚未提炼。打开原任务后，Codex 会按固定规则生成学习笔记和待查证项。' }}</p></div>
-  <div class="conversation-meta"><span>任务 ID</span><code>{{ source.thread_id }}</code><span>导入时间</span><strong>{{ source.imported_at[:10] }}</strong><span>最近同步</span><strong>{{ source.last_synced_at[:10] if source.last_synced_at else '尚未同步' }}</strong></div>
+  <div><p class="eyebrow">CODEX CONVERSATION · {{ {'pending':'待沉淀','synced':'已沉淀','stale':'有新内容','unavailable':'不可用'}[source.status] }}</p><h1>{{ source.title }}</h1><p class="lead">{{ source.summary or '这段会话尚未沉淀。打开原任务后，Codex 会先形成或更新一篇完整研究文档，再把章节、技术、证据和实验映射到图谱。' }}</p></div>
+  <div class="conversation-meta"><span>保存范围</span><strong>仅本机 · 不进入公开仓库</strong><span>导入时间</span><strong>{{ source.imported_at[:10] }}</strong><span>最近同步</span><strong>{{ source.last_synced_at[:10] if source.last_synced_at else '尚未同步' }}</strong><span>研究文档</span><strong>{{ documents|length }} 篇</strong><span>原文锚点</span><strong>{{ anchors|length }} 个</strong></div>
 </header>
 
-<section class="sync-callout"><div><span class="kicker">SYNC WITH USER CONFIRMATION</span><h2>回到原 Codex 会话，提炼这次学习</h2><p>按钮会打开原任务并预填指令，不会替你发送。请在 Codex 中检查后确认发送。</p></div><a class="button primary" href="{{ codex_url }}">打开 Codex 并同步</a></section>
+<section class="sync-callout"><div><span class="kicker">UPDATE WITH USER CONFIRMATION</span><h2>回到原 Codex 会话，继续修订研究文档</h2><p>按钮会打开原任务并预填指令，不会替你发送。新认识应优先补入、修正或反驳原文档的对应章节。</p></div><a class="button primary" href="{{ codex_url }}">打开 Codex 继续沉淀</a></section>
 
-<details class="prompt-fallback"><summary>Codex 没有自动打开？查看并复制同步指令</summary><pre>{{ prompt }}</pre><button class="button secondary" type="button" data-copy-prompt>复制指令</button></details>
+<details class="prompt-fallback"><summary>Codex 没有自动打开？查看并复制沉淀指令</summary><pre>{{ prompt }}</pre><button class="button secondary" type="button" data-copy-prompt>复制指令</button></details>
 
-<section class="node-list-section"><div class="section-heading"><div><span class="kicker">DISTILLED NOTES</span><h2>从本会话提炼的笔记</h2></div><span class="badge neutral">{{ notes|length }} 条</span></div><div class="knowledge-node-grid">{% for node in notes %}<a class="knowledge-node-card {{ node.node_type }}" href="/nodes/{{ node.id }}"><div class="node-card-top"><span>{{ source_kind_labels[node.source_kind] }}</span><small class="verification {{ node.verification_status }}">{{ verification_labels[node.verification_status] }}</small></div><h2>{{ node.title }}</h2><p>{{ node.body }}</p><div class="node-card-target">查看来源与证据 →</div></a>{% else %}<div class="node-empty-card"><strong>等待第一次同步</strong><p>在 Codex 中完成同步后，刷新这里即可看到提炼出的笔记。</p></div>{% endfor %}</div></section>
+<section class="conversation-document-section">
+  <div class="section-heading"><div><span class="kicker">PRIMARY OUTPUT</span><h2>从本会话形成的研究文档</h2></div><span class="badge neutral">{{ documents|length }} 篇</span></div>
+  <p class="section-intro">这里才是会话内容的主体沉淀：完整结论、逻辑层次、适用边界、证据、反例和实施路线都保留在正文中。</p>
+  <div class="conversation-document-grid">
+    {% for document in documents %}
+    <a class="conversation-document-card" href="/documents/{{ document.id }}">
+      <div class="document-card-meta"><span>{{ document_kind_labels[document.document_kind] }}</span><span>{{ visibility_labels[document.visibility] }}</span><span>{{ document_verification_labels[document.verification_status] }}</span></div>
+      <h3>{{ document.title }}</h3><p>{{ document.summary }}</p>
+      <footer><span>更新 {{ document.updated_at[:10] }}</span><strong>阅读完整文档 →</strong></footer>
+    </a>
+    {% else %}
+    <div class="node-empty-card compact-empty"><strong>还没有形成研究文档</strong><p>回到 Codex 执行沉淀指令，先生成一篇结构完整的文档，再决定哪些章节值得进入图谱。</p></div>
+    {% endfor %}
+  </div>
+</section>
+
+{% if anchors %}<section class="conversation-anchor-summary"><span class="kicker">COGNITIVE PROVENANCE</span><h2>这段会话已留下 {{ anchors|length }} 个可定位片段</h2><p>它们保留某个问题、纠正或判断是怎样形成的，是认知来源，不自动作为外部事实证据。</p><div class="anchor-kind-pills">{% for kind, label in anchor_kind_labels.items() %}{% set count = anchors|selectattr('anchor_kind', 'equalto', kind)|list|length %}{% if count %}<span>{{ label }} {{ count }}</span>{% endif %}{% endfor %}</div></section>{% endif %}
+
+<section class="node-list-section"><div class="section-heading"><div><span class="kicker">UNFILED FRAGMENTS</span><h2>尚未纳入文档的认知片段</h2></div><span class="badge neutral">{{ notes|length }} 条</span></div><p class="section-intro">只有尚未找到合适章节的临时疑问、质疑、纠正或原文定位才留在这里；它们不取代完整文档。</p><div class="knowledge-node-grid">{% for node in notes %}<a class="knowledge-node-card {{ node.node_type }}" href="/nodes/{{ node.id }}"><div class="node-card-top"><span>{{ source_kind_labels[node.source_kind] }}</span><small class="verification {{ node.verification_status }}">{{ verification_labels[node.verification_status] }}</small></div><h2>{{ node.title }}</h2><p>{{ node.body }}</p><div class="node-card-target">查看认知来源 →</div></a>{% else %}<div class="node-empty-card compact-empty"><strong>没有未归档片段</strong><p>这是理想状态：会话中的有效认识已经进入完整文档。</p></div>{% endfor %}</div></section>
 {% endblock %}
 {% block scripts %}<script>document.querySelector('[data-copy-prompt]')?.addEventListener('click', async (event) => { await navigator.clipboard.writeText({{ prompt|tojson }}); event.currentTarget.textContent = '已复制'; });</script>{% endblock %}

@@ -16,6 +16,7 @@ from radar.store import load_catalog
 
 
 THREAD_ID = "123e4567-e89b-42d3-a456-426614174000"
+THREAD_V7_ID = "018f2a6c-7b3d-7e4f-8a9b-1c2d3e4f5a6b"
 
 
 @pytest.mark.parametrize(
@@ -24,10 +25,11 @@ THREAD_ID = "123e4567-e89b-42d3-a456-426614174000"
         THREAD_ID,
         f"codex://threads/{THREAD_ID}",
         f"https://chatgpt.com/codex/tasks/{THREAD_ID}",
+        f"codex://threads/{THREAD_V7_ID}",
     ],
 )
 def test_parse_thread_reference(reference: str) -> None:
-    assert parse_thread_id(reference) == THREAD_ID
+    assert parse_thread_id(reference) in {THREAD_ID, THREAD_V7_ID}
 
 
 @pytest.mark.parametrize("reference", ["", "not-a-thread", "codex://threads/nope"])
@@ -44,6 +46,8 @@ def test_conversation_source_create_and_update(tmp_path) -> None:
     )
     assert source.status == "pending"
     assert source.thread_url == f"codex://threads/{THREAD_ID}"
+    assert THREAD_ID not in source.id
+    assert source.visibility == "private"
 
     updated = update_conversation_source(
         source.id,
@@ -79,4 +83,5 @@ def test_conversation_import_route_and_deep_link(tmp_path, monkeypatch) -> None:
         detail = client.get(created.headers["location"])
         assert detail.status_code == 200
         assert "codex://threads/" in detail.text
-        assert "打开 Codex 并同步" in detail.text
+        assert "打开 Codex 继续沉淀" in detail.text
+        assert "从本会话形成的研究文档" in detail.text

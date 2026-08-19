@@ -22,14 +22,29 @@ def _default_status(node_type: str) -> str:
     return "open" if node_type in {"question", "challenge"} else "active"
 
 
-def _node_directory(project_root: Path) -> Path:
-    return project_root / "knowledge" / "nodes"
+def _node_directory(project_root: Path, visibility: str = "shared") -> Path:
+    directory = project_root / "knowledge" / "nodes"
+    return directory / "private" if visibility == "private" else directory
 
 
-def _node_path(node_id: str, project_root: Path) -> Path:
+def _node_path(
+    node_id: str,
+    project_root: Path,
+    visibility: str = "shared",
+) -> Path:
     if not NODE_ID_PATTERN.fullmatch(node_id):
         raise ValueError("Invalid knowledge node id")
-    return _node_directory(project_root) / f"{node_id}.yaml"
+    return _node_directory(project_root, visibility) / f"{node_id}.yaml"
+
+
+def _find_node_path(node_id: str, project_root: Path) -> Path:
+    shared_path = _node_path(node_id, project_root)
+    private_path = _node_path(node_id, project_root, "private")
+    if shared_path.exists():
+        return shared_path
+    if private_path.exists():
+        return private_path
+    return shared_path
 
 
 def _atomic_write(path: Path, node: KnowledgeNode) -> None:
@@ -53,7 +68,7 @@ def _atomic_write(path: Path, node: KnowledgeNode) -> None:
 
 
 def read_node(node_id: str, project_root: Path = PROJECT_ROOT) -> KnowledgeNode:
-    path = _node_path(node_id, project_root)
+    path = _find_node_path(node_id, project_root)
     if not path.exists():
         raise FileNotFoundError(node_id)
     return KnowledgeNode.model_validate(yaml.safe_load(path.read_text(encoding="utf-8")))
@@ -72,6 +87,7 @@ def create_node(
     conversation_source_ids: list[str] | None = None,
     evidence_ids: list[str] | None = None,
     verification_status: str = "unverified",
+    visibility: str = "shared",
     project_root: Path = PROJECT_ROOT,
 ) -> KnowledgeNode:
     timestamp = _now()
@@ -91,8 +107,9 @@ def create_node(
         conversation_source_ids=conversation_source_ids or [],
         evidence_ids=evidence_ids or [],
         verification_status=verification_status,
+        visibility=visibility,
     )
-    _atomic_write(_node_path(node.id, project_root), node)
+    _atomic_write(_node_path(node.id, project_root, node.visibility), node)
     return node
 
 
@@ -110,6 +127,7 @@ def update_node(
     conversation_source_ids: list[str] | None = None,
     evidence_ids: list[str] | None = None,
     verification_status: str | None = None,
+    visibility: str | None = None,
     project_root: Path = PROJECT_ROOT,
 ) -> KnowledgeNode:
     current = read_node(node_id, project_root)
@@ -136,11 +154,16 @@ def update_node(
             "verification_status": (
                 verification_status or current.verification_status
             ),
+            "visibility": visibility or current.visibility,
             "updated_at": _now(),
         }
     )
     node = KnowledgeNode.model_validate(node.model_dump())
-    _atomic_write(_node_path(node.id, project_root), node)
+    current_path = _find_node_path(node.id, project_root)
+    next_path = _node_path(node.id, project_root, node.visibility)
+    _atomic_write(next_path, node)
+    if current_path != next_path and current_path.exists():
+        current_path.unlink()
     return node
 
 
@@ -155,7 +178,7 @@ def archive_node(node_id: str, project_root: Path = PROJECT_ROOT) -> KnowledgeNo
             "updated_at": _now(),
         }
     )
-    _atomic_write(_node_path(node.id, project_root), node)
+    _atomic_write(_find_node_path(node.id, project_root), node)
     return node
 
 
@@ -170,5 +193,5 @@ def restore_node(node_id: str, project_root: Path = PROJECT_ROOT) -> KnowledgeNo
             "updated_at": _now(),
         }
     )
-    _atomic_write(_node_path(node.id, project_root), node)
+    _atomic_write(_find_node_path(node.id, project_root), node)
     return node

@@ -152,6 +152,34 @@ CREATE TABLE IF NOT EXISTS conversation_sources (
     last_synced_at TEXT,
     last_synced_turn_id TEXT
 );
+CREATE TABLE IF NOT EXISTS conversation_anchors (
+    id TEXT PRIMARY KEY,
+    node_id TEXT NOT NULL,
+    conversation_source_id TEXT NOT NULL,
+    turn_id TEXT NOT NULL,
+    item_id TEXT NOT NULL,
+    role TEXT NOT NULL,
+    anchor_kind TEXT NOT NULL,
+    excerpt TEXT NOT NULL,
+    locator_text TEXT NOT NULL,
+    content_hash TEXT NOT NULL,
+    captured_at TEXT NOT NULL,
+    status TEXT NOT NULL
+);
+CREATE TABLE IF NOT EXISTS research_documents (
+    id TEXT PRIMARY KEY,
+    title TEXT NOT NULL,
+    summary TEXT NOT NULL,
+    content_path TEXT NOT NULL,
+    document_kind TEXT NOT NULL,
+    status TEXT NOT NULL,
+    visibility TEXT NOT NULL,
+    verification_status TEXT NOT NULL,
+    conversation_source_ids_json TEXT NOT NULL,
+    technology_ids_json TEXT NOT NULL,
+    capability_ids_json TEXT NOT NULL,
+    updated_at TEXT NOT NULL
+);
 CREATE TABLE IF NOT EXISTS knowledge_node_provenance (
     id TEXT PRIMARY KEY,
     node_id TEXT NOT NULL,
@@ -180,6 +208,9 @@ CREATE INDEX IF NOT EXISTS idx_knowledge_type_status ON knowledge_nodes(node_typ
 CREATE INDEX IF NOT EXISTS idx_knowledge_target ON knowledge_nodes(target_id);
 CREATE INDEX IF NOT EXISTS idx_conversation_status ON conversation_sources(status);
 CREATE INDEX IF NOT EXISTS idx_conversation_thread ON conversation_sources(thread_id);
+CREATE INDEX IF NOT EXISTS idx_anchor_node ON conversation_anchors(node_id);
+CREATE INDEX IF NOT EXISTS idx_anchor_source ON conversation_anchors(conversation_source_id);
+CREATE INDEX IF NOT EXISTS idx_research_document_status ON research_documents(status, visibility);
 CREATE INDEX IF NOT EXISTS idx_node_provenance_node ON knowledge_node_provenance(node_id);
 CREATE INDEX IF NOT EXISTS idx_node_provenance_source ON knowledge_node_provenance(source_id);
 CREATE INDEX IF NOT EXISTS idx_relationships_source ON relationships(source_id);
@@ -209,6 +240,8 @@ def rebuild_index(catalog: Catalog, database_path: Path = DATABASE_PATH) -> Path
                 "discovery_runs",
                 "knowledge_nodes",
                 "conversation_sources",
+                "conversation_anchors",
+                "research_documents",
                 "knowledge_node_provenance",
                 "relationships",
             ):
@@ -438,6 +471,46 @@ def rebuild_index(catalog: Catalog, database_path: Path = DATABASE_PATH) -> Path
                     for item in catalog.conversation_sources
                 ],
             )
+            connection.executemany(
+                "INSERT INTO conversation_anchors VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                [
+                    (
+                        item.id,
+                        item.node_id,
+                        item.conversation_source_id,
+                        item.turn_id,
+                        item.item_id,
+                        item.role,
+                        item.anchor_kind,
+                        item.excerpt,
+                        item.locator_text,
+                        item.content_hash,
+                        item.captured_at,
+                        item.status,
+                    )
+                    for item in catalog.conversation_anchors
+                ],
+            )
+            connection.executemany(
+                "INSERT INTO research_documents VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                [
+                    (
+                        item.id,
+                        item.title,
+                        item.summary,
+                        item.content_path,
+                        item.document_kind,
+                        item.status,
+                        item.visibility,
+                        item.verification_status,
+                        json.dumps(item.conversation_source_ids, ensure_ascii=False),
+                        json.dumps(item.technology_ids, ensure_ascii=False),
+                        json.dumps(item.capability_ids, ensure_ascii=False),
+                        item.updated_at,
+                    )
+                    for item in catalog.research_documents
+                ],
+            )
 
             provenance: list[tuple[str, str, str, str | None, str]] = []
             for node in catalog.knowledge_nodes:
@@ -620,6 +693,33 @@ def rebuild_index(catalog: Catalog, database_path: Path = DATABASE_PATH) -> Path
                                 {"verification_status": node.verification_status},
                                 ensure_ascii=False,
                             ),
+                        )
+                    )
+            for document in catalog.research_documents:
+                for source_id in document.conversation_source_ids:
+                    relationships.append(
+                        (
+                            f"{source_id}:summarized_into_document:{document.id}",
+                            source_id,
+                            document.id,
+                            "summarized_into_document",
+                            json.dumps(
+                                {"verification_status": document.verification_status},
+                                ensure_ascii=False,
+                            ),
+                        )
+                    )
+                for target_id in [
+                    *document.technology_ids,
+                    *document.capability_ids,
+                ]:
+                    relationships.append(
+                        (
+                            f"{document.id}:covers:{target_id}",
+                            document.id,
+                            target_id,
+                            "covers",
+                            "{}",
                         )
                     )
             connection.executemany("INSERT INTO relationships VALUES (?, ?, ?, ?, ?)", relationships)

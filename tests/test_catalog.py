@@ -16,6 +16,7 @@ def test_seed_catalog_loads() -> None:
     assert len(catalog.discovery_categories) == 6
     assert len(catalog.discovery_queries) == 10
     assert len(catalog.discovery_sources) == 6
+    assert len(catalog.research_documents) >= 1
 
 
 def test_graph_contains_nodes_and_edges() -> None:
@@ -27,6 +28,9 @@ def test_graph_contains_nodes_and_edges() -> None:
     assert any(item["data"]["relation"] == "supports" for item in edges)
     assert any(item["data"]["type"] == "knowledge" for item in nodes)
     assert any(item["data"]["relation"] == "documented_by" for item in edges)
+    assert any(item["data"]["type"] == "document" for item in nodes)
+    assert any(item["data"]["type"] == "section" for item in nodes)
+    assert any(item["data"]["relation"] == "contains" for item in edges)
 
     connected_ids = {
         endpoint
@@ -76,7 +80,8 @@ def test_graph_contains_nodes_and_edges() -> None:
 
 
 def test_sqlite_index_is_rebuildable(tmp_path) -> None:
-    path = rebuild_index(load_catalog(PROJECT_ROOT), tmp_path / "radar.db")
+    catalog = load_catalog(PROJECT_ROOT)
+    path = rebuild_index(catalog, tmp_path / "radar.db")
     assert path.exists()
     with sqlite3.connect(path) as connection:
         assert connection.execute("SELECT COUNT(*) FROM discovery_candidates").fetchone()[0] == 20
@@ -84,7 +89,9 @@ def test_sqlite_index_is_rebuildable(tmp_path) -> None:
         assert connection.execute("SELECT COUNT(*) FROM discovery_queries").fetchone()[0] == 10
         assert connection.execute("SELECT COUNT(*) FROM discovery_sources").fetchone()[0] == 6
         assert connection.execute("SELECT COUNT(*) FROM discovery_runs").fetchone()[0] == 0
-        assert connection.execute("SELECT COUNT(*) FROM conversation_sources").fetchone()[0] == 0
+        assert connection.execute("SELECT COUNT(*) FROM conversation_sources").fetchone()[0] == len(catalog.conversation_sources)
+        assert connection.execute("SELECT COUNT(*) FROM conversation_anchors").fetchone()[0] == len(catalog.conversation_anchors)
+        assert connection.execute("SELECT COUNT(*) FROM research_documents").fetchone()[0] == len(catalog.research_documents)
         assert connection.execute("SELECT COUNT(*) FROM knowledge_node_provenance").fetchone()[0] >= 3
         assert connection.execute(
             "SELECT COUNT(*) FROM relationships WHERE relation = 'classified_as'"

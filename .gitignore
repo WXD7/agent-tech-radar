@@ -11,3 +11,7 @@ __pycache__/
 # Codex task identifiers and imported conversation metadata are personal by default.
 knowledge/conversations/*.yaml
 !knowledge/conversations/README.md
+knowledge/conversations/anchors/
+knowledge/nodes/private/
+knowledge/maps/private/
+knowledge/documents/private/

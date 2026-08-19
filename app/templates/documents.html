@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block title %}研究文档 · Agent 技术雷达{% endblock %}
+{% block content %}
+<header class="page-header node-page-header document-index-header">
+  <div>
+    <p class="eyebrow">DOCUMENTS ARE THE KNOWLEDGE</p>
+    <h1>把会话沉淀成<br><em>可持续修订的文档</em></h1>
+    <p class="lead">默认产物是一篇有结论、分层、比较、证据、风险和实施路线的研究文档。图谱只是文档的立体目录，不再用短标题卡片取代正文。</p>
+  </div>
+  <a class="button primary header-action" href="/conversations/import">导入 Codex 会话</a>
+</header>
+
+<section class="document-index-intro">
+  <span class="kicker">DEFAULT KNOWLEDGE UNIT</span>
+  <strong>会话 → 研究文档 → 章节与证据 → 图谱导航</strong>
+  <p>后续追问优先更新原文档的对应章节，同时保留原 Codex 会话与修订脉络。</p>
+</section>
+
+<section class="document-card-grid">
+  {% for document in documents %}
+  <a class="document-card" href="/documents/{{ document.id }}">
+    <div class="document-card-meta">
+      <span>{{ document_kind_labels[document.document_kind] }}</span>
+      <span>{{ visibility_labels[document.visibility] }}</span>
+      <span>{{ verification_labels[document.verification_status] }}</span>
+    </div>
+    <h2>{{ document.title }}</h2>
+    <p>{{ document.summary }}</p>
+    <div class="document-card-foot">
+      <span>{{ document.conversation_source_ids|length }} 段 Codex 来源</span>
+      <strong>阅读文档 →</strong>
+    </div>
+  </a>
+  {% else %}
+  <div class="node-empty-card"><strong>还没有研究文档</strong><p>导入一段 Codex 会话，将其沉淀成长文档，而不是拆成一组孤立标题。</p></div>
+  {% endfor %}
+</section>
+{% endblock %}

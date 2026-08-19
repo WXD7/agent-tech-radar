@@ -1,0 +1,114 @@
+- id: doc-agent-research-method
+  title: Agent 技术调研与沉淀方法
+  summary: 说明 Agent Tech Radar 如何以长文档作为知识主体，用图谱导航文档、章节、技术、证据与实验。
+  content_path: knowledge/documents/agent-research-method.md
+  document_kind: architecture_note
+  status: active
+  visibility: shared
+  verification_status: partially_verified
+  conversation_source_ids: []
+  technology_ids:
+  - tech-pydantic-ai
+  - tech-langgraph
+  capability_ids:
+  - cap-orchestration
+  - cap-observability
+  featured_section_anchors:
+  - section-1
+  - section-2
+  - section-3
+  - section-4
+  - section-5
+  section_context_ids:
+    section-1:
+    - cap-orchestration
+    section-2:
+    - tech-pydantic-ai
+    - tech-langgraph
+    section-3:
+    - cap-observability
+    section-4:
+    - cap-human-loop
+    section-5:
+    - cap-human-loop
+    - cap-observability
+  created_at: '2026-08-18T00:00:00Z'
+  updated_at: '2026-08-18T00:00:00Z'
+- id: doc-european-legal-agent
+  title: 欧洲法律 Agent 技术选型与评估体系学习笔记
+  summary: 围绕欧洲法律辅助 Agent，系统整理后端框架、耐久执行、法律检索、评测、幻觉治理与安全架构，并给出分层组合、PoC 与实施路线。
+  content_path: knowledge/documents/doc-european-legal-agent.md
+  document_kind: research_note
+  status: active
+  visibility: shared
+  verification_status: mixed
+  conversation_source_ids: []
+  technology_ids:
+  - tech-pydantic-ai
+  - tech-langgraph
+  - tech-openai-agents
+  - tech-crewai
+  - tech-autogen
+  capability_ids:
+  - cap-structured-output
+  - cap-orchestration
+  - cap-tools-mcp
+  - cap-observability
+  - cap-human-loop
+  - cap-durability
+  featured_section_anchors:
+  - section-1
+  - section-2
+  - section-3
+  - section-4
+  - section-5
+  - section-7
+  - section-8
+  - section-9
+  - section-10
+  - section-13
+  - section-14
+  - section-16
+  - section-17
+  section_context_ids:
+    section-1:
+    - tech-pydantic-ai
+    - tech-langgraph
+    section-2:
+    - cap-orchestration
+    - cap-durability
+    section-3:
+    - tech-pydantic-ai
+    - cap-structured-output
+    section-4:
+    - tech-pydantic-ai
+    - cap-durability
+    section-5:
+    - tech-langgraph
+    - cap-orchestration
+    section-7:
+    - tech-openai-agents
+    - tech-crewai
+    - tech-autogen
+    section-8:
+    - candidate-run-llama-llama-index
+    - candidate-deepset-haystack
+    section-9:
+    - cap-structured-output
+    - cap-human-loop
+    section-10:
+    - cap-observability
+    section-13:
+    - tech-pydantic-ai
+    - tech-langgraph
+    section-14:
+    - cap-durability
+    - cap-observability
+    section-16:
+    - tech-pydantic-ai
+    - cap-human-loop
+    section-17:
+    - tech-pydantic-ai
+    - cap-tools-mcp
+  created_at: '2026-08-19T02:50:53Z'
+  updated_at: '2026-08-19T02:50:53Z'

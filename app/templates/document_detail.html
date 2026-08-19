@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% block title %}{{ document.title }} · Agent 技术雷达{% endblock %}
+{% block content %}
+<a class="back-link" href="/documents">← 返回研究文档</a>
+<header class="document-hero">
+  <div>
+    <p class="eyebrow">{{ document_kind_labels[document.document_kind]|upper }} · {{ visibility_labels[document.visibility] }}</p>
+    <h1>{{ document.title }}</h1>
+    <p class="lead">{{ document.summary }}</p>
+  </div>
+  <div class="document-hero-actions">
+    <a class="button primary" href="/documents/{{ document.id }}/research">在 Codex 中继续研究</a>
+    {% if selected_map %}<a class="button secondary" href="/graph?map_id={{ selected_map.id }}&focus={{ document.id }}">在所属图谱中查看</a>{% endif %}
+  </div>
+  <div class="document-hero-meta">
+    <span><strong>{{ chapter_count }}</strong>个主章节</span>
+    <span><strong>{{ "%.1f"|format(character_count / 10000) }}</strong>万字符</span>
+    <span>{{ verification_labels[document.verification_status] }}</span>
+    <span>更新 {{ document.updated_at[:10] }}</span>
+  </div>
+</header>
+
+<section class="document-reader-layout">
+  <nav class="document-outline" aria-label="文档目录">
+    <span class="kicker">DOCUMENT OUTLINE</span>
+    <strong>本文目录</strong>
+    <div>
+      {% for section in outline %}
+      <a class="level-{{ section.level }}" href="#{{ section.anchor }}"><span>{{ section.title }}</span></a>
+      {% endfor %}
+    </div>
+  </nav>
+
+  <article class="document-content">
+    {{ rendered_document }}
+  </article>
+
+  <aside class="document-context-rail">
+    <section>
+      <span class="kicker">COGNITIVE PROVENANCE</span>
+      <h2>这篇文档怎样形成</h2>
+      <p>Codex 会话说明认识过程，不自动等于外部事实证据。</p>
+      {% for source in conversation_sources %}
+      <a class="document-source-link" href="{{ source.thread_url }}"><strong>{{ source.title }}</strong><small>回到原 Codex 会话 →</small></a>
+      {% else %}<small>本文档尚未绑定会话来源。</small>{% endfor %}
+    </section>
+    <section>
+      <span class="kicker">RELATED OBJECTS</span>
+      <h2>文档正在研究什么</h2>
+      <div class="document-related-list">
+        {% for target in related_targets %}<span><small>{{ target.type }}</small><strong>{{ target.label }}</strong></span>{% endfor %}
+      </div>
+    </section>
+    <section class="document-model-note">
+      <strong>文档是主体</strong>
+      <p>章节节点只负责定位和跨文档关联。完整论证、边界和证据始终保留在正文中。</p>
+    </section>
+  </aside>
+</section>
+{% endblock %}
+{% block scripts %}
+<script src="{{ url_for('static', path='vendor/mermaid-11.16.1.min.js') }}"></script>
+<script src="{{ url_for('static', path='js/document-diagrams.js') }}?v=1"></script>
+{% endblock %}

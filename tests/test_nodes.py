@@ -4,6 +4,8 @@ import shutil
 from fastapi.testclient import TestClient
 
 import app.main as main
+from radar.anchors import create_anchor
+from radar.conversations import create_conversation_source
 from radar.nodes import archive_node, create_node, restore_node, update_node
 from radar.paths import PROJECT_ROOT
 from radar.store import load_catalog
@@ -89,3 +91,44 @@ def test_node_routes_full_lifecycle(tmp_path, monkeypatch) -> None:
         )
         assert restored.status_code == 303
         assert load_catalog(tmp_path).knowledge_node(node_id).status == "open"
+
+
+def test_node_detail_renders_codex_anchor_actions(tmp_path, monkeypatch) -> None:
+    _copy_catalog(tmp_path)
+    source = create_conversation_source(
+        title="PydanticAI 学习会话",
+        thread_reference="codex://threads/018f2a6c-7b3d-7e4f-8a9b-1c2d3e4f5a6b",
+        project_root=tmp_path,
+    )
+    node = create_node(
+        title="Guardrail 的真实边界",
+        body="会话只是认知来源，结论仍待查证。",
+        node_type="concept",
+        target_id="cap-human-loop",
+        relation_type="relates_to",
+        source_kind="codex_conversation",
+        conversation_source_ids=[source.id],
+        visibility="private",
+        project_root=tmp_path,
+    )
+    create_anchor(
+        node_id=node.id,
+        conversation_source_id=source.id,
+        turn_id="turn-1",
+        item_id="item-2",
+        role="assistant",
+        anchor_kind="answer_basis",
+        excerpt="Guardrail 是检查位置，不是检测模型。",
+        locator_text="Guardrail 是检查位置",
+        project_root=tmp_path,
+    )
+    monkeypatch.setattr(main, "APP_PROJECT_ROOT", tmp_path)
+
+    with TestClient(main.app) as client:
+        detail = client.get(f"/nodes/{node.id}")
+        assert detail.status_code == 200
+        assert "形成这条认识的原始片段" in detail.text
+        assert "回到原会话并复制定位句" in detail.text
+        assert "从这里开启新追问" in detail.text
+        assert "codex://threads/" in detail.text
+        assert "codex://new?" in detail.text

@@ -3,6 +3,7 @@ import re
 import tempfile
 from datetime import UTC, datetime
 from pathlib import Path
+import secrets
 from uuid import UUID
 
 import yaml
@@ -12,12 +13,11 @@ from radar.paths import PROJECT_ROOT
 
 
 CONVERSATION_ID_PATTERN = re.compile(
-    r"^conversation-[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-"
-    r"[89ab][0-9a-f]{3}-[0-9a-f]{12}$"
+    r"^conversation-(?:[0-9a-f]{16}|[0-9a-f-]{36})$"
 )
 UUID_PATTERN = re.compile(
     r"(?<![0-9a-f])"
-    r"([0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12})"
+    r"([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[89ab][0-9a-f]{3}-[0-9a-f]{12})"
     r"(?![0-9a-f])",
     re.IGNORECASE,
 )
@@ -97,7 +97,18 @@ def create_conversation_source(
     project_root: Path = PROJECT_ROOT,
 ) -> ConversationSource:
     thread_id = parse_thread_id(thread_reference)
-    source_id = f"conversation-{thread_id}"
+    for existing_path in sorted(_conversation_directory(project_root).glob("*.yaml")):
+        if existing_path.name == "README.yaml":
+            continue
+        try:
+            existing = ConversationSource.model_validate(
+                yaml.safe_load(existing_path.read_text(encoding="utf-8"))
+            )
+        except (OSError, ValueError, TypeError):
+            continue
+        if existing.thread_id == thread_id:
+            return existing
+    source_id = f"conversation-{secrets.token_hex(8)}"
     path = _conversation_path(source_id, project_root)
     if path.exists():
         return read_conversation_source(source_id, project_root)
@@ -121,6 +132,7 @@ def update_conversation_source(
     status: str | None = None,
     summary: str | None = None,
     note_ids: list[str] | None = None,
+    document_ids: list[str] | None = None,
     last_synced_turn_id: str | None = None,
     mark_synced: bool = False,
     project_root: Path = PROJECT_ROOT,
@@ -133,6 +145,11 @@ def update_conversation_source(
             "status": "synced" if mark_synced else (status or current.status),
             "summary": summary if summary is not None else current.summary,
             "note_ids": note_ids if note_ids is not None else current.note_ids,
+            "document_ids": (
+                document_ids
+                if document_ids is not None
+                else current.document_ids
+            ),
             "last_synced_turn_id": (
                 last_synced_turn_id
                 if last_synced_turn_id is not None

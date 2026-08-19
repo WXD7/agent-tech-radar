@@ -8,13 +8,28 @@ from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
+from radar.anchors import archive_anchor, create_anchor
 from radar.conversations import create_conversation_source
+from radar.documents import (
+    document_section_text,
+    load_document_text,
+    parse_document_outline,
+    render_markdown,
+)
 from radar.indexing import rebuild_index
+from radar.maps import (
+    active_maps,
+    add_node_to_map,
+    graph_view,
+    map_for_document,
+    map_for_node,
+    resolve_map,
+)
 from radar.models import Catalog
 from radar.nodes import archive_node, create_node, restore_node, update_node
 from radar.paths import PROJECT_ROOT
 from radar.review import decide_proposal
-from radar.store import graph_elements, load_catalog
+from radar.store import load_catalog
 
 
 APP_DIR = Path(__file__).resolve().parent
@@ -22,7 +37,7 @@ APP_DIR = Path(__file__).resolve().parent
 app = FastAPI(
     title="Agent 技术雷达",
     description="持续发现、验证和审核 Agent 开发技术。",
-    version="0.1.0",
+    version="1.1.0",
 )
 app.mount("/static", StaticFiles(directory=APP_DIR / "static"), name="static")
 templates = Jinja2Templates(directory=APP_DIR / "templates")
@@ -61,6 +76,23 @@ VERIFICATION_LABELS = {
     "partially_verified": "部分证实",
     "verified": "已查证",
     "contested": "存在争议",
+}
+VISIBILITY_LABELS = {"private": "仅本机", "shared": "可共享"}
+ANCHOR_KIND_LABELS = {
+    "question_context": "当时的问题",
+    "answer_basis": "形成认识的回答",
+    "correction": "纠正与反驳",
+    "decision_context": "决策上下文",
+}
+ROLE_LABELS = {"user": "我", "assistant": "Codex"}
+DOCUMENT_KIND_LABELS = {
+    "research_note": "研究文档",
+    "architecture_note": "架构文档",
+    "decision_record": "决策记录",
+}
+DOCUMENT_VERIFICATION_LABELS = {
+    **VERIFICATION_LABELS,
+    "mixed": "分层查证",
 }
 
 
@@ -130,6 +162,11 @@ def _target_options(catalog: Catalog) -> list[dict[str, str]]:
     options.extend(
         {"id": item.id, "label": item.title, "type": NODE_TYPE_LABELS[item.node_type]}
         for item in catalog.knowledge_nodes
+        if item.status != "archived"
+    )
+    options.extend(
+        {"id": item.id, "label": item.title, "type": "研究文档"}
+        for item in catalog.research_documents
         if item.status != "archived"
     )
     return options
@@ -231,20 +268,54 @@ def _conversation_sync_prompt(source_id: str) -> str:
     return (
         "请把当前 Codex 会话同步到 Agent Radar。"
         f"项目目录是 {APP_PROJECT_ROOT}，会话来源 ID 是 {source_id}。"
-        "请使用 sync-agent-radar 技能：总结这段会话中形成的知识，"
-        "把观点拆成可独立复习的学习笔记，保留本会话为认知来源；"
+        "请使用 sync-agent-radar 技能，但把一篇连贯、可阅读、可持续修订的 Markdown "
+        "研究文档作为默认产物，不要把每个观点机械拆成独立图谱节点。"
+        "文档至少根据内容组织一页结论、概念/技术分层、核心方案深入解释、"
+        "横向比较、证据权重、风险与边界、PoC/实验、实施路线和一手资料索引。"
+        "新认识应补充、修正或反驳原文档的对应章节，不要覆盖历史。"
+        "只有尚未能合理放入文档结构的临时疑问，才作为 knowledge/nodes/private/ 认知片段。"
         "把需要外部确认的内容标成待查证，并优先查官方文档、官方仓库、"
         "版本发布说明或可重复实验。不要把 AI 回答本身当作事实证据，"
-        "也不要直接改写已审核的 claims/decisions。完成后更新"
-        " knowledge/conversations/ 与 knowledge/nodes/，再简要说明新增、"
+        "也不要直接改写已审核的 claims/decisions。"
+        "私人会话文档默认保存到 knowledge/documents/private/ 并设为 visibility: private。"
+        "完成后更新 knowledge/conversations/、knowledge/documents/private/ 及所属专题图谱，再简要说明新增、"
         "修正和仍有争议的内容。"
     )
 
 
-def _research_prompt(target: dict[str, str]) -> str:
+def _document_research_prompt(
+    document_title: str,
+    document_id: str,
+    section_title: str | None,
+    section_text: str | None,
+) -> str:
+    focus = f"，重点是章节《{section_title}》" if section_title else ""
+    excerpt = f"\n当前章节原文：\n{section_text[:6000]}\n" if section_text else ""
+    return (
+        f"请继续研究 Agent Radar 中的文档《{document_title}》（ID: {document_id}）{focus}。"
+        f"{excerpt}项目目录是 {APP_PROJECT_ROOT}。"
+        "请先阅读完整文档及相关上下文，再进行追问、质疑、查源或实验。"
+        "本次的默认写回单位是文档章节：新结果应补充、修正或反驳对应段落，"
+        "并保留修订历史与 Codex 会话来源；不要把回答拆成一批仅有标题的孤立节点。"
+        "外部技术断言必须区分官方证据、社区经验、AI 推断、实验结果与人工决策；"
+        "无法证实的内容保持待查证或争议状态。"
+    )
+
+
+def _research_prompt(
+    target: dict[str, str],
+    node_body: str | None = None,
+    anchor_excerpts: list[str] | None = None,
+) -> str:
+    context = ""
+    if node_body:
+        context += f"\n当前笔记摘要：{node_body}"
+    if anchor_excerpts:
+        context += "\n形成这条认识的会话片段：\n- " + "\n- ".join(anchor_excerpts[:4])
     return (
         "请围绕 Agent Radar 中的这个对象继续研究："
         f"[{target['type']}] {target['label']}（ID: {target['id']}）。"
+        f"{context}"
         f"项目目录是 {APP_PROJECT_ROOT}。先阅读该对象及相邻结论、证据和笔记，"
         "明确这次最值得回答的问题；再使用官方文档、官方仓库、发布说明、论文"
         "或最小可重复实验进行二次查证。把会话中的学习过程提炼为"
@@ -252,6 +323,16 @@ def _research_prompt(target: dict[str, str]) -> str:
         " source_kind: automated_research，绝不要编造 conversation_source_ids。"
         "无法证实的内容保持为"
         "待查证或争议项；如需改变正式结论，只生成 proposal，不要直接改 claims。"
+    )
+
+
+def _anchor_continue_prompt(node_title: str, excerpt: str) -> str:
+    return (
+        f"我想继续追问 Agent Radar 中的知识点《{node_title}》。\n"
+        f"当时形成这条认识的会话片段是：\n{excerpt}\n\n"
+        "请先判断我这次最值得追问、质疑或查证的部分，再继续讨论。"
+        f"项目目录是 {APP_PROJECT_ROOT}。讨论结束后，在我确认时把新增认识同步回 Radar；"
+        "保留为新的补充、纠正或反驳节点，不要覆盖历史，也不要把 AI 回答当成事实证据。"
     )
 
 
@@ -275,7 +356,7 @@ def dashboard(request: Request) -> HTMLResponse:
             catalog,
             stats=[
                 {"label": "已见过技术", "value": len(catalog.technologies) + len(catalog.discovery_candidates), "delta": "已评估与待评估分层保存"},
-                {"label": "学习笔记", "value": len(catalog.knowledge_nodes), "delta": f"来自 {len(catalog.conversation_sources)} 段已导入会话"},
+                {"label": "研究文档", "value": len(catalog.research_documents), "delta": f"保留 {len(catalog.knowledge_nodes)} 条认知片段"},
                 {"label": "已支持结论", "value": supported_claims, "delta": f"共 {len(catalog.claims)} 条正式结论"},
                 {"label": "等待审核", "value": len(pending), "delta": "Codex 不能静默发布"},
             ],
@@ -287,8 +368,13 @@ def dashboard(request: Request) -> HTMLResponse:
 
 
 @app.get("/graph", response_class=HTMLResponse)
-def graph(request: Request) -> HTMLResponse:
+def graph(request: Request, map_id: str | None = None) -> HTMLResponse:
     catalog = _catalog()
+    try:
+        selected_map = resolve_map(catalog, map_id)
+    except KeyError as exc:
+        raise HTTPException(status_code=404, detail="Knowledge map not found") from exc
+    view = graph_view(catalog, selected_map, APP_PROJECT_ROOT)
     return templates.TemplateResponse(
         request=request,
         name="graph.html",
@@ -296,28 +382,10 @@ def graph(request: Request) -> HTMLResponse:
             request,
             "graph",
             catalog,
-            node_counts={
-                "technology": len(catalog.technologies),
-                "candidate": sum(
-                    item.status == "triaged" and not item.archived
-                    for item in catalog.discovery_candidates
-                ),
-                "discovery_category": len(
-                    {
-                        category_id
-                        for item in catalog.discovery_candidates
-                        if item.status == "triaged" and not item.archived
-                        for category_id in item.category_ids
-                    }
-                ),
-                "capability": len(catalog.capabilities),
-                "claim": len(catalog.claims),
-                "evidence": len(catalog.evidence),
-                "experiment": len(catalog.experiments),
-                "knowledge": sum(
-                    item.status != "archived" for item in catalog.knowledge_nodes
-                ),
-            },
+            node_counts=view["node_counts"],
+            graph_metrics=view["metrics"],
+            selected_map=selected_map,
+            knowledge_maps=active_maps(catalog),
         ),
     )
 
@@ -412,8 +480,48 @@ def discovery(request: Request) -> HTMLResponse:
 
 
 @app.get("/api/graph")
-def graph_api() -> dict[str, list[dict]]:
-    return {"elements": graph_elements(_catalog())}
+def graph_api(map_id: str | None = None) -> dict:
+    catalog = _catalog()
+    try:
+        selected_map = resolve_map(catalog, map_id)
+    except KeyError as exc:
+        raise HTTPException(status_code=404, detail="Knowledge map not found") from exc
+    return graph_view(catalog, selected_map, APP_PROJECT_ROOT)
+
+
+@app.get("/api/documents/{document_id}/preview")
+def document_preview(document_id: str, section: str | None = None) -> dict:
+    catalog = _catalog()
+    document = catalog.research_document(document_id)
+    if document is None or document.status == "archived":
+        raise HTTPException(status_code=404, detail="Research document not found")
+    try:
+        text = load_document_text(document, APP_PROJECT_ROOT)
+    except (FileNotFoundError, OSError, ValueError) as exc:
+        raise HTTPException(status_code=404, detail="Document content not found") from exc
+    outline = parse_document_outline(text)
+    section_item = next((item for item in outline if item.anchor == section), None)
+    if section and section_item is None:
+        raise HTTPException(status_code=404, detail="Document section not found")
+    suffix = f"#{section}" if section else ""
+    return {
+        "id": document.id,
+        "title": document.title,
+        "summary": document.summary,
+        "verification_label": DOCUMENT_VERIFICATION_LABELS[
+            document.verification_status
+        ],
+        "visibility_label": VISIBILITY_LABELS[document.visibility],
+        "section": section,
+        "section_title": section_item.title if section_item else None,
+        "html": str(render_markdown(text)),
+        "full_href": f"/documents/{document.id}{suffix}",
+        "research_href": (
+            f"/documents/{document.id}/research?section={section}"
+            if section
+            else f"/documents/{document.id}/research"
+        ),
+    }
 
 
 @app.get("/technologies/{technology_id}", response_class=HTMLResponse)
@@ -447,6 +555,131 @@ def technology_detail(request: Request, technology_id: str) -> HTMLResponse:
     )
 
 
+@app.get("/documents", response_class=HTMLResponse)
+def documents(request: Request) -> HTMLResponse:
+    catalog = _catalog()
+    active_documents = sorted(
+        (
+            item
+            for item in catalog.research_documents
+            if item.status != "archived"
+        ),
+        key=lambda item: item.updated_at,
+        reverse=True,
+    )
+    source_map = {item.id: item for item in catalog.conversation_sources}
+    return templates.TemplateResponse(
+        request=request,
+        name="documents.html",
+        context=_context(
+            request,
+            "documents",
+            catalog,
+            documents=active_documents,
+            source_map=source_map,
+            document_kind_labels=DOCUMENT_KIND_LABELS,
+            verification_labels=DOCUMENT_VERIFICATION_LABELS,
+            visibility_labels=VISIBILITY_LABELS,
+        ),
+    )
+
+
+@app.get("/documents/{document_id}", response_class=HTMLResponse)
+def document_detail(request: Request, document_id: str) -> HTMLResponse:
+    catalog = _catalog()
+    document = catalog.research_document(document_id)
+    if document is None or document.status == "archived":
+        raise HTTPException(status_code=404, detail="Research document not found")
+    try:
+        text = load_document_text(document, APP_PROJECT_ROOT)
+    except (FileNotFoundError, OSError, ValueError) as exc:
+        raise HTTPException(status_code=404, detail="Document content not found") from exc
+    outline = parse_document_outline(text)
+    sources = [
+        item
+        for item in catalog.conversation_sources
+        if item.id in document.conversation_source_ids
+    ]
+    target_map = _target_map(catalog)
+    related_targets = [
+        target_map[target_id]
+        for target_id in [*document.technology_ids, *document.capability_ids]
+        if target_id in target_map
+    ]
+    selected_map = map_for_document(catalog, document)
+    return templates.TemplateResponse(
+        request=request,
+        name="document_detail.html",
+        context=_context(
+            request,
+            "documents",
+            catalog,
+            document=document,
+            rendered_document=render_markdown(text),
+            outline=[item for item in outline if item.level in {2, 3}],
+            chapter_count=sum(item.level == 2 for item in outline),
+            character_count=len(text),
+            conversation_sources=sources,
+            related_targets=related_targets,
+            selected_map=selected_map,
+            document_kind_labels=DOCUMENT_KIND_LABELS,
+            verification_labels=DOCUMENT_VERIFICATION_LABELS,
+            visibility_labels=VISIBILITY_LABELS,
+        ),
+    )
+
+
+@app.get("/documents/{document_id}/research", response_class=HTMLResponse)
+def document_research(
+    request: Request,
+    document_id: str,
+    section: str | None = None,
+) -> HTMLResponse:
+    catalog = _catalog()
+    document = catalog.research_document(document_id)
+    if document is None or document.status == "archived":
+        raise HTTPException(status_code=404, detail="Research document not found")
+    try:
+        text = load_document_text(document, APP_PROJECT_ROOT)
+    except (FileNotFoundError, OSError, ValueError) as exc:
+        raise HTTPException(status_code=404, detail="Document content not found") from exc
+    section_title = None
+    section_text = None
+    if section:
+        try:
+            section_item, section_text = document_section_text(text, section)
+            section_title = section_item.title
+        except KeyError as exc:
+            raise HTTPException(status_code=404, detail="Document section not found") from exc
+    prompt = _document_research_prompt(
+        document.title,
+        document.id,
+        section_title,
+        section_text,
+    )
+    suffix = f"#{section}" if section else ""
+    browser_url = _absolute_page_url(request, f"/documents/{document.id}{suffix}")
+    target = {
+        "id": document.id,
+        "label": section_title or document.title,
+        "type": "文档章节" if section_title else "研究文档",
+    }
+    return templates.TemplateResponse(
+        request=request,
+        name="research_launch.html",
+        context=_context(
+            request,
+            "documents",
+            catalog,
+            target=target,
+            prompt=prompt,
+            codex_url=_codex_new_url(prompt, browser_url),
+            back_url=f"/documents/{document.id}{suffix}",
+            handoff_note="新认识将优先更新这篇文档的对应章节，而不是生成一批孤立标题节点。",
+        ),
+    )
+
+
 @app.get("/nodes", response_class=HTMLResponse)
 def nodes(request: Request) -> HTMLResponse:
     catalog = _catalog()
@@ -472,6 +705,7 @@ def nodes(request: Request) -> HTMLResponse:
             node_type_labels=NODE_TYPE_LABELS,
             source_kind_labels=SOURCE_KIND_LABELS,
             verification_labels=VERIFICATION_LABELS,
+            visibility_labels=VISIBILITY_LABELS,
             target_map=_target_map(catalog),
             conversation_sources=sorted(
                 catalog.conversation_sources,
@@ -551,10 +785,28 @@ def conversation_detail(request: Request, source_id: str) -> HTMLResponse:
     source = catalog.conversation_source(source_id)
     if source is None:
         raise HTTPException(status_code=404, detail="Conversation source not found")
+    documents = sorted(
+        (
+            item
+            for item in catalog.research_documents
+            if item.status != "archived"
+            and (
+                source.id in item.conversation_source_ids
+                or item.id in source.document_ids
+            )
+        ),
+        key=lambda item: item.updated_at,
+        reverse=True,
+    )
     notes = [
         item
         for item in catalog.knowledge_nodes
         if source.id in item.conversation_source_ids
+    ]
+    anchors = [
+        item
+        for item in catalog.anchors_for_conversation(source.id)
+        if item.status == "active"
     ]
     prompt = _conversation_sync_prompt(source.id)
     page_url = _absolute_page_url(request, f"/conversations/{source.id}")
@@ -563,26 +815,57 @@ def conversation_detail(request: Request, source_id: str) -> HTMLResponse:
         name="conversation_detail.html",
         context=_context(
             request,
-            "nodes",
+            "documents",
             catalog,
             source=source,
+            documents=documents,
             notes=notes,
+            anchors=anchors,
             prompt=prompt,
             codex_url=_codex_thread_url(source.thread_id, prompt, page_url),
+            document_kind_labels=DOCUMENT_KIND_LABELS,
+            document_verification_labels=DOCUMENT_VERIFICATION_LABELS,
+            visibility_labels=VISIBILITY_LABELS,
             source_kind_labels=SOURCE_KIND_LABELS,
             verification_labels=VERIFICATION_LABELS,
+            anchor_kind_labels=ANCHOR_KIND_LABELS,
         ),
     )
 
 
 @app.get("/research/{target_id}", response_class=HTMLResponse)
-def research_target(request: Request, target_id: str) -> HTMLResponse:
+def research_target(
+    request: Request,
+    target_id: str,
+    map_id: str | None = None,
+) -> HTMLResponse:
     catalog = _catalog()
     target = _target_map(catalog).get(target_id)
     if target is None:
         raise HTTPException(status_code=404, detail="Research target not found")
-    prompt = _research_prompt(target)
-    browser_url = _absolute_page_url(request, f"/graph?focus={quote(target_id)}")
+    node = catalog.knowledge_node(target_id)
+    active_anchors = [
+        item
+        for item in catalog.anchors_for_node(target_id)
+        if item.status == "active"
+    ]
+    prompt = _research_prompt(
+        target,
+        node.body if node else None,
+        [item.excerpt for item in active_anchors],
+    )
+    try:
+        selected_map = (
+            resolve_map(catalog, map_id)
+            if map_id
+            else (map_for_node(catalog, node) if node else resolve_map(catalog))
+        )
+    except KeyError as exc:
+        raise HTTPException(status_code=404, detail="Knowledge map not found") from exc
+    browser_url = _absolute_page_url(
+        request,
+        f"/graph?map_id={quote(selected_map.id)}&focus={quote(target_id)}",
+    )
     return templates.TemplateResponse(
         request=request,
         name="research_launch.html",
@@ -604,8 +887,13 @@ def node_new(
     node_type: str = "question",
     relation_type: str | None = None,
     parent_id: str | None = None,
+    map_id: str | None = None,
 ) -> HTMLResponse:
     catalog = _catalog()
+    try:
+        selected_map = resolve_map(catalog, map_id) if map_id else None
+    except KeyError as exc:
+        raise HTTPException(status_code=404, detail="Knowledge map not found") from exc
     if node_type not in NODE_TYPE_LABELS:
         node_type = "question"
     parent = catalog.knowledge_node(parent_id) if parent_id else None
@@ -645,12 +933,16 @@ def node_new(
                 "conversation_source_ids": [],
                 "evidence_ids": [],
                 "verification_status": "unverified",
+                "visibility": selected_map.visibility if selected_map else "private",
+                "map_id": selected_map.id if selected_map else "",
             },
             parent=parent,
+            selected_map=selected_map,
             source_kind_labels=SOURCE_KIND_LABELS,
             verification_labels=VERIFICATION_LABELS,
             conversation_sources=catalog.conversation_sources,
             evidence_options=catalog.evidence,
+            visibility_labels=VISIBILITY_LABELS,
         ),
     )
     return _set_csrf_cookie(response, csrf_token)
@@ -671,6 +963,8 @@ def node_create(
     conversation_source_ids: list[str] = Form(default=[]),
     evidence_ids: list[str] = Form(default=[]),
     verification_status: str = Form(default="unverified"),
+    visibility: str = Form(default="private"),
+    map_id: str = Form(default=""),
 ) -> RedirectResponse:
     _check_csrf(request, csrf_token)
     catalog = _catalog()
@@ -683,6 +977,17 @@ def node_create(
         evidence_ids,
     )
     _validate_links(catalog, target_id, parent_id or None)
+    if visibility not in VISIBILITY_LABELS:
+        raise HTTPException(status_code=400, detail="未知的可见范围。")
+    try:
+        selected_map = resolve_map(catalog, map_id) if map_id else None
+    except KeyError as exc:
+        raise HTTPException(status_code=400, detail="未知的知识图谱。") from exc
+    if selected_map and selected_map.visibility == "shared" and visibility == "private":
+        raise HTTPException(
+            status_code=400,
+            detail="仅本机笔记不能直接加入共享图谱；请选择可共享，或从私有专题图谱中新建。",
+        )
     try:
         node = create_node(
             title=title,
@@ -696,10 +1001,13 @@ def node_create(
             conversation_source_ids=conversation_source_ids,
             evidence_ids=evidence_ids,
             verification_status=verification_status,
+            visibility=visibility,
             project_root=APP_PROJECT_ROOT,
         )
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
+    if selected_map:
+        add_node_to_map(selected_map, node.id, APP_PROJECT_ROOT)
     return RedirectResponse(url=f"/nodes/{node.id}?created=1", status_code=303)
 
 
@@ -715,6 +1023,33 @@ def node_detail(request: Request, node_id: str) -> HTMLResponse:
         (item for item in catalog.knowledge_nodes if item.parent_id == node.id),
         key=lambda item: item.created_at,
     )
+    conversation_sources = [
+        item
+        for item in catalog.conversation_sources
+        if item.id in node.conversation_source_ids
+    ]
+    source_map = {item.id: item for item in conversation_sources}
+    selected_map = map_for_node(catalog, node)
+    anchor_views = []
+    for anchor in sorted(
+        catalog.anchors_for_node(node.id),
+        key=lambda item: (item.status == "archived", item.captured_at, item.id),
+    ):
+        source = source_map.get(anchor.conversation_source_id)
+        if source is None:
+            continue
+        continue_prompt = _anchor_continue_prompt(node.title, anchor.excerpt)
+        anchor_views.append(
+            {
+                "anchor": anchor,
+                "source": source,
+                "open_url": source.thread_url,
+                "continue_url": _codex_new_url(
+                    continue_prompt,
+                    _absolute_page_url(request, f"/nodes/{node.id}"),
+                ),
+            }
+        )
     csrf_token = _csrf_token(request)
     response = templates.TemplateResponse(
         request=request,
@@ -732,15 +1067,20 @@ def node_detail(request: Request, node_id: str) -> HTMLResponse:
             relation_labels=RELATION_LABELS,
             source_kind_labels=SOURCE_KIND_LABELS,
             verification_labels=VERIFICATION_LABELS,
-            conversation_sources=[
-                item
-                for item in catalog.conversation_sources
-                if item.id in node.conversation_source_ids
-            ],
+            conversation_sources=conversation_sources,
+            anchor_views=anchor_views,
             evidence_items=[
                 item for item in catalog.evidence if item.id in node.evidence_ids
             ],
             codex_research_url=f"/research/{node.id}",
+            anchor_kind_labels=ANCHOR_KIND_LABELS,
+            role_labels=ROLE_LABELS,
+            visibility_labels=VISIBILITY_LABELS,
+            graph_focus_url=(
+                f"/graph?map_id={quote(selected_map.id)}&focus={quote(node.target_id)}"
+                if selected_map
+                else f"/graph?focus={quote(node.target_id)}"
+            ),
         ),
     )
     return _set_csrf_cookie(response, csrf_token)
@@ -776,6 +1116,7 @@ def node_edit(request: Request, node_id: str) -> HTMLResponse:
             verification_labels=VERIFICATION_LABELS,
             conversation_sources=catalog.conversation_sources,
             evidence_options=catalog.evidence,
+            visibility_labels=VISIBILITY_LABELS,
         ),
     )
     return _set_csrf_cookie(response, csrf_token)
@@ -797,6 +1138,7 @@ def node_update(
     conversation_source_ids: list[str] = Form(default=[]),
     evidence_ids: list[str] = Form(default=[]),
     verification_status: str = Form(default="unverified"),
+    visibility: str = Form(default="private"),
 ) -> RedirectResponse:
     _check_csrf(request, csrf_token)
     catalog = _catalog()
@@ -811,6 +1153,8 @@ def node_update(
         evidence_ids,
     )
     _validate_links(catalog, target_id, parent_id or None, node_id)
+    if visibility not in VISIBILITY_LABELS:
+        raise HTTPException(status_code=400, detail="未知的可见范围。")
     try:
         update_node(
             node_id,
@@ -825,11 +1169,68 @@ def node_update(
             conversation_source_ids=conversation_source_ids,
             evidence_ids=evidence_ids,
             verification_status=verification_status,
+            visibility=visibility,
             project_root=APP_PROJECT_ROOT,
         )
     except (FileNotFoundError, ValueError) as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
     return RedirectResponse(url=f"/nodes/{node_id}?updated=1", status_code=303)
+
+
+@app.post("/nodes/{node_id}/anchors")
+def node_anchor_create(
+    request: Request,
+    node_id: str,
+    csrf_token: str = Form(...),
+    conversation_source_id: str = Form(...),
+    turn_id: str = Form(..., min_length=2, max_length=120),
+    item_id: str = Form(..., min_length=2, max_length=120),
+    role: str = Form(...),
+    anchor_kind: str = Form(...),
+    excerpt: str = Form(..., min_length=2, max_length=4000),
+    locator_text: str = Form(default="", max_length=240),
+) -> RedirectResponse:
+    _check_csrf(request, csrf_token)
+    catalog = _catalog()
+    node = catalog.knowledge_node(node_id)
+    source = catalog.conversation_source(conversation_source_id)
+    if node is None or node.status == "archived":
+        raise HTTPException(status_code=404, detail="Knowledge node not found")
+    if source is None or source.id not in node.conversation_source_ids:
+        raise HTTPException(status_code=400, detail="该会话尚未关联到这条笔记。")
+    if role not in ROLE_LABELS or anchor_kind not in ANCHOR_KIND_LABELS:
+        raise HTTPException(status_code=400, detail="未知的会话片段类型。")
+    try:
+        create_anchor(
+            node_id=node.id,
+            conversation_source_id=source.id,
+            turn_id=turn_id,
+            item_id=item_id,
+            role=role,
+            anchor_kind=anchor_kind,
+            excerpt=excerpt,
+            locator_text=locator_text or None,
+            project_root=APP_PROJECT_ROOT,
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    return RedirectResponse(url=f"/nodes/{node.id}?anchor_added=1", status_code=303)
+
+
+@app.post("/nodes/{node_id}/anchors/{anchor_id}/archive")
+def node_anchor_archive(
+    request: Request,
+    node_id: str,
+    anchor_id: str,
+    csrf_token: str = Form(...),
+) -> RedirectResponse:
+    _check_csrf(request, csrf_token)
+    catalog = _catalog()
+    anchor = catalog.conversation_anchor(anchor_id)
+    if anchor is None or anchor.node_id != node_id:
+        raise HTTPException(status_code=404, detail="Conversation anchor not found")
+    archive_anchor(anchor.id, APP_PROJECT_ROOT)
+    return RedirectResponse(url=f"/nodes/{node_id}?anchor_archived=1", status_code=303)
 
 
 @app.post("/nodes/{node_id}/archive")

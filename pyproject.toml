@@ -1,6 +1,6 @@
 [project]
 name = "agent-tech-radar"
-version = "0.1.0"
+version = "1.1.0"
 description = "A dual-input technology knowledge graph powered by AI conversations, passive radar discovery, evidence, and experiments."
 readme = "README.md"
 requires-python = ">=3.12"

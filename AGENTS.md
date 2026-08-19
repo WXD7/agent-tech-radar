@@ -6,12 +6,16 @@ Maintain a reviewable, evidence-backed technology radar for AI agent development
 
 ## Write boundaries
 
-- Codex may create or update files in `proposals/`, `inbox/`, `experiments/`, `reports/`, `.radar/`, `knowledge/conversations/`, and `knowledge/nodes/`.
-- `knowledge/conversations/` and `knowledge/nodes/` may only be written when the user explicitly imports or synchronizes a Codex conversation, or explicitly asks Codex to save a learning note.
+- Codex may create or update files in `proposals/`, `inbox/`, `experiments/`, `reports/`, `.radar/`, `knowledge/conversations/`, `knowledge/documents/`, `knowledge/maps/`, and `knowledge/nodes/`.
+- `knowledge/conversations/`, `knowledge/documents/private/`, `knowledge/maps/private/`, and `knowledge/nodes/private/` may only be written when the user explicitly imports or synchronizes a Codex conversation, or explicitly asks Codex to save or reorganize knowledge from a conversation.
 - Codex must not directly change accepted files in `knowledge/claims/`, `knowledge/decisions/`, or `knowledge/reviews/` unless the user explicitly asks it to apply an approved review decision.
 - The web review action counts as explicit human approval for the single proposal submitted by that form.
 - Never delete review records or rewrite historical experiment outputs.
 - A Codex conversation is provenance for how the user learned something; it is not primary evidence that an external technical claim is true.
+- Imported Codex documents are private by default. Store long-form knowledge under `knowledge/documents/private/`, topic maps under `knowledge/maps/private/`, unfiled fragments under `knowledge/nodes/private/`, and turn/item excerpts under `knowledge/conversations/anchors/`. These paths remain local-only unless the user deliberately rewrites sanitized shared material.
+- A research document is the primary knowledge unit. Graph document and section nodes are navigation projections; do not replace a coherent document with a batch of title-only knowledge nodes.
+- Each conversation-derived note should keep one or more `ConversationAnchor` records for the question, answer, correction, or decision moment that actually formed the note. Preserve real `turn_id` and `item_id`; never invent them.
+- Opening a thread currently supports `codex://threads/<thread-id>`. Until message-level deep links are stable, use the anchor's `locator_text` for in-thread search.
 
 ## Evidence rules
 

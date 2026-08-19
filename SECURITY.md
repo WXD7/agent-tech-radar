@@ -7,7 +7,7 @@ Agent Tech Radar 当前是个人本地 Demo，不是经过安全审计的多用�
 - 只建议绑定 `127.0.0.1`。
 - 不要将当前 Web 端口直接暴露到公网。
 - 当前的 CSRF 防护不等于登录、授权或租户隔离。
-- 导入会话的任务 ID 和元数据默认被 `.gitignore` 排除。
+- 导入会话的任务 ID、节点级原文锚点、私有笔记和私有专题图谱默认被 `.gitignore` 排除。
 
 ## 敏感信息
 
@@ -15,6 +15,7 @@ Agent Tech Radar 当前是个人本地 Demo，不是经过安全审计的多用�
 
 - API Key、OAuth Token、Cookie 或其他会话凭据。
 - 私人 Codex 任务 ID、未脱敏的会话摘要或本地用户路径。
+- `knowledge/conversations/anchors/`、`knowledge/nodes/private/` 和 `knowledge/maps/private/` 中的本机学习数据。
 - `.env`、`.radar/`、虚拟环境、测试缓存或本地数据库。
 - 包含私有源码、内部文档或他人个人信息的调研证据。
 

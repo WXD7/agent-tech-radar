@@ -1,11 +1,13 @@
 {% extends "base.html" %}
 {% block title %}{{ node.title }} · Agent 技术雷达{% endblock %}
 {% block content %}
-<a class="back-link" href="/nodes">← 返回学习笔记</a>
+<a class="back-link" href="/nodes">← 返回认知片段</a>
 {% if request.query_params.get('created') %}<div class="success-banner">笔记已加入学习地图。</div>{% endif %}
 {% if request.query_params.get('updated') %}<div class="success-banner">笔记已更新。</div>{% endif %}
 {% if request.query_params.get('archived') %}<div class="success-banner neutral-banner">笔记已归档，不再显示于图谱，但可随时恢复。</div>{% endif %}
 {% if request.query_params.get('restored') %}<div class="success-banner">笔记已恢复到图谱。</div>{% endif %}
+{% if request.query_params.get('anchor_added') %}<div class="success-banner">会话片段已加入这条知识笔记。</div>{% endif %}
+{% if request.query_params.get('anchor_archived') %}<div class="success-banner neutral-banner">会话片段已归档，历史仍然保留。</div>{% endif %}
 
 <header class="knowledge-detail-hero {{ node.node_type }}">
   <div>
@@ -13,7 +15,7 @@
     <h1>{{ node.title }}</h1>
     <p class="lead">{{ node.body }}</p>
   </div>
-  <div class="knowledge-detail-meta"><span>{{ node_type_labels[node.node_type] }}</span><span>创建 {{ node.created_at[:10] }}</span><span>更新 {{ node.updated_at[:10] }}</span><span>关系 {{ relation_labels[node.relation_type] }}</span></div>
+  <div class="knowledge-detail-meta"><span>{{ node_type_labels[node.node_type] }}</span><span>{{ visibility_labels[node.visibility] }}</span><span>创建 {{ node.created_at[:10] }}</span><span>更新 {{ node.updated_at[:10] }}</span><span>关系 {{ relation_labels[node.relation_type] }}</span></div>
 </header>
 
 <section class="knowledge-detail-grid">
@@ -25,13 +27,56 @@
       {% for child in children %}<a class="chain-card child {% if child.status == 'archived' %}archived{% endif %}" href="/nodes/{{ child.id }}"><span>后续 · {{ node_type_labels[child.node_type] }}</span><strong>{{ child.title }}</strong></a>{% else %}<p class="empty-state">还没有后续修正或补充。</p>{% endfor %}
     </div>
 
+    <section class="conversation-anchor-section">
+      <div class="section-heading"><div><span class="kicker">CODEX MOMENTS</span><h2>形成这条认识的原始片段</h2></div><span class="badge neutral">{{ anchor_views|selectattr('anchor.status', 'equalto', 'active')|list|length }} 个锚点</span></div>
+      <p class="section-intro">笔记负责提炼，原片段负责保留语境。它是认知来源，不等同于外部事实证据。</p>
+      <div class="anchor-stack">
+        {% for view in anchor_views %}
+        {% set anchor = view.anchor %}
+        <article class="anchor-card {{ anchor.anchor_kind }} {% if anchor.status == 'archived' %}archived{% endif %}">
+          <div class="anchor-card-head"><span>{{ anchor_kind_labels[anchor.anchor_kind] }}</span><small>{{ role_labels[anchor.role] }} · {{ view.source.title }}{% if anchor.status == 'archived' %} · 已归档{% endif %}</small></div>
+          <blockquote>{{ anchor.excerpt }}</blockquote>
+          {% if anchor.status == 'active' %}
+          <div class="anchor-actions">
+            <a class="button primary small-button" href="{{ view.open_url }}" data-open-thread data-locator="{{ anchor.locator_text }}">回到原会话并复制定位句</a>
+            <button class="button secondary small-button" type="button" data-copy-locator="{{ anchor.locator_text }}">只复制定位句</button>
+            <a class="button secondary small-button" href="{{ view.continue_url }}">从这里开启新追问</a>
+            <form method="post" action="/nodes/{{ node.id }}/anchors/{{ anchor.id }}/archive"><input type="hidden" name="csrf_token" value="{{ csrf_token }}"><button class="text-button" type="submit">归档片段</button></form>
+          </div>
+          {% endif %}
+        </article>
+        {% else %}
+        <div class="node-empty-card compact-empty"><strong>目前只有摘要，没有原始片段</strong><p>下一次会话同步可自动保存关键提问、回答和纠正。</p></div>
+        {% endfor %}
+      </div>
+
+      {% if conversation_sources and node.status != 'archived' %}
+      <details class="anchor-add-panel"><summary>手动补充一段会话原文</summary>
+        <form method="post" action="/nodes/{{ node.id }}/anchors" class="anchor-form">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+          <div class="form-grid two-columns">
+            <label><span>来源会话</span><select name="conversation_source_id" required>{% for source in conversation_sources %}<option value="{{ source.id }}">{{ source.title }}</option>{% endfor %}</select></label>
+            <label><span>片段用途</span><select name="anchor_kind" required>{% for value, label in anchor_kind_labels.items() %}<option value="{{ value }}">{{ label }}</option>{% endfor %}</select></label>
+          </div>
+          <div class="form-grid two-columns">
+            <label><span>说话者</span><select name="role" required>{% for value, label in role_labels.items() %}<option value="{{ value }}">{{ label }}</option>{% endfor %}</select></label>
+            <label><span>定位短句</span><input name="locator_text" maxlength="240" placeholder="在原会话内搜索这句话"></label>
+          </div>
+          <label><span>原始片段</span><textarea name="excerpt" rows="5" minlength="2" maxlength="4000" required></textarea></label>
+          <details class="technical-anchor-fields"><summary>高级定位信息</summary><div class="form-grid two-columns"><label><span>Turn ID</span><input name="turn_id" minlength="2" maxlength="120" required></label><label><span>Item ID</span><input name="item_id" minlength="2" maxlength="120" required></label></div></details>
+          <button class="button primary" type="submit">保存会话片段</button>
+        </form>
+      </details>
+      {% endif %}
+    </section>
+
     <div class="source-evidence-grid">
       <section><span class="kicker">COGNITIVE PROVENANCE</span><h2>来自哪些会话</h2>{% for source in conversation_sources %}<a class="provenance-card" href="/conversations/{{ source.id }}"><strong>{{ source.title }}</strong><p>{{ source.summary or '这段会话是该笔记的认知来源。' }}</p><small>打开会话记录 →</small></a>{% else %}<p class="empty-state">这是一条{{ source_kind_labels[node.source_kind] }}，未关联 Codex 会话。</p>{% endfor %}</section>
       <section><span class="kicker">FACTUAL EVIDENCE</span><h2>用什么证明</h2>{% for evidence in evidence_items %}<a class="provenance-card evidence" href="{{ evidence.url }}" target="_blank" rel="noreferrer"><strong>{{ evidence.title }}</strong><p>{{ evidence.summary }}</p><small>{{ evidence.source_type }} · 查看原始来源 →</small></a>{% else %}<p class="empty-state">尚未绑定外部证据；当前状态为“{{ verification_labels[node.verification_status] }}”。</p>{% endfor %}</section>
     </div>
   </div>
   <aside class="detail-aside">
-    <div class="aside-card"><span class="kicker">TARGET</span><h2>核心关联</h2>{% if target %}<a class="target-link" href="/graph?focus={{ target.id }}"><small>{{ target.type }}</small><strong>{{ target.label }}</strong><span>在导航图中查看 →</span></a>{% else %}<p class="empty-state">{{ node.target_id }}</p>{% endif %}</div>
+    <div class="aside-card"><span class="kicker">TARGET</span><h2>核心关联</h2>{% if target %}<a class="target-link" href="{{ graph_focus_url }}"><small>{{ target.type }}</small><strong>{{ target.label }}</strong><span>在所属图谱中查看 →</span></a>{% else %}<p class="empty-state">{{ node.target_id }}</p>{% endif %}</div>
     {% if node.status != 'archived' %}
     <div class="aside-card codex-action-card"><span class="kicker">CONTINUE IN CODEX</span><h2>继续研究这条笔记</h2><p>创建一段带完整上下文的新 Codex 会话。你可以追问、质疑、查源或设计实验，完成后再同步回来。</p><a class="button primary full-button" href="{{ codex_research_url }}">在 Codex 中继续研究</a><a class="button secondary full-button" href="/nodes/new?target_id={{ node.target_id }}&parent_id={{ node.id }}&node_type=note&relation_type=extends">记录手写笔记</a></div>
     <div class="aside-card manage-card"><span class="kicker">MANAGE</span><h2>管理笔记</h2><a class="button secondary full-button" href="/nodes/{{ node.id }}/edit">编辑笔记与来源</a><form method="post" action="/nodes/{{ node.id }}/archive"><input type="hidden" name="csrf_token" value="{{ csrf_token }}"><button class="button danger full-button" type="submit">归档笔记</button></form><p>归档可恢复，不会破坏历史。</p></div>
@@ -41,3 +86,28 @@
   </aside>
 </section>
 {% endblock %}
+{% block scripts %}<script>
+async function copyRadarText(value) {
+  try {
+    await navigator.clipboard.writeText(value);
+  } catch (error) {
+    const field = document.createElement('textarea');
+    field.value = value;
+    field.style.position = 'fixed';
+    field.style.opacity = '0';
+    document.body.appendChild(field);
+    field.select();
+    document.execCommand('copy');
+    field.remove();
+  }
+}
+document.querySelectorAll('[data-copy-locator]').forEach((button) => button.addEventListener('click', async () => {
+  await copyRadarText(button.dataset.copyLocator || '');
+  button.textContent = '定位句已复制';
+}));
+document.querySelectorAll('[data-open-thread]').forEach((link) => link.addEventListener('click', async (event) => {
+  event.preventDefault();
+  await copyRadarText(link.dataset.locator || '');
+  window.location.href = link.href;
+}));
+</script>{% endblock %}
